@@ -30,3 +30,6 @@ venv/
 tmp/
 temp/
 *.tmp
+
+# Bot data (SQLite WAL/SHM files)
+bot-data/
