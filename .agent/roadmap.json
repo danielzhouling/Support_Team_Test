@@ -1,0 +1,71 @@
+{
+  "project_name": "Dmall Helpdesk 技能评估系统",
+  "version": "1.0.0",
+  "phase": "0 - 原型确认",
+  "last_updated": "2026-04-23",
+  "timeline": {
+    "phase0": "1-2周（原型Demo）",
+    "phase1": "2-3周（MVP核心闭环）",
+    "phase2": "2-3周（AI能力增强）",
+    "phase3": "1-2周（数据与学习）"
+  },
+  "milestones": [
+    {
+      "phase": "阶段0",
+      "name": "原型确认",
+      "description": "完成所有功能静态HTML Demo页面，确认UI/UX方案",
+      "status": "in_progress",
+      "deliverables": [
+        "admin/login.html",
+        "admin/employee-list.html",
+        "admin/question-list.html",
+        "admin/exam-create-step1.html",
+        "admin/exam-create-step2.html",
+        "admin/exam-create-step3.html",
+        "admin/exam-monitor.html",
+        "admin/exam-review.html",
+        "admin/exam-publish.html",
+        "employee/login.html",
+        "employee/index.html",
+        "employee/exam-list.html",
+        "employee/exam-detail.html",
+        "employee/exam-do.html",
+        "employee/exam-submit.html",
+        "employee/exam-result.html"
+      ]
+    },
+    {
+      "phase": "阶段一",
+      "name": "MVP核心闭环",
+      "description": "完成考核全流程：账号管理、题目管理、创建考核、员工作答、自动评分、批阅管理",
+      "status": "pending",
+      "deliverables": [
+        "可运行的Web应用（功能可用，数据可读写）"
+      ]
+    },
+    {
+      "phase": "阶段二",
+      "name": "AI能力增强",
+      "description": "接入Minimax 2.7 API，实现文档解析、AI出题、Chat智能体、AI分析报告",
+      "status": "pending",
+      "deliverables": [
+        "AI能力可用的完整系统"
+      ]
+    },
+    {
+      "phase": "阶段三",
+      "name": "数据与学习",
+      "description": "团队数据看板、个人技能档案、学习中心、数据导出、通知消息",
+      "status": "pending",
+      "deliverables": [
+        "完整功能系统"
+      ]
+    }
+  ],
+  "tech_stack": {
+    "frontend": "Vue3 + Vite + Element Plus",
+    "backend": "Python FastAPI",
+    "database": "SQLite (开发) / PostgreSQL (生产)",
+    "ai": "Minimax 2.7 国际版 API"
+  }
+}
