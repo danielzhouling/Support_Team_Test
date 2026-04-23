@@ -19,7 +19,7 @@
       "id": "PHASE0-002",
       "phase": "阶段0 - 原型确认",
       "description": "管理端 - 员工列表页 (admin/employee-list.html)",
-      "pass": false,
+      "pass": true,
       "details": [
         "左侧导航栏（账号管理/题库管理/考核管理/数据报表/个人中心）",
         "顶部：筛选条件（部门/岗位/状态）+ 搜索框",

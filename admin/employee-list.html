@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>员工管理 - Dmall Helpdesk 技能评估系统</title>
+    <link rel="stylesheet" href="../shared/css/theme.css">
+    <style>
+        :root {
+            --sidebar-width: 240px;
+        }
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        /* 侧边栏 */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-sidebar);
+            color: white;
+            position: fixed;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar-logo {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .sidebar-logo h1 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .sidebar-logo p {
+            font-size: 12px;
+            color: rgba(255,255,255,0.5);
+            margin-top: 4px;
+        }
+        .sidebar-nav {
+            flex: 1;
+            padding: 16px 0;
+            overflow-y: auto;
+        }
+        .nav-section {
+            margin-bottom: 24px;
+        }
+        .nav-section-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.4);
+            text-transform: uppercase;
+            padding: 0 20px;
+            margin-bottom: 8px;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .nav-item:hover {
+            background: rgba(255,255,255,0.05);
+            color: white;
+        }
+        .nav-item.active {
+            background: rgba(79, 70, 229, 0.3);
+            color: white;
+            border-right: 3px solid var(--color-primary);
+        }
+        .nav-item svg {
+            width: 18px;
+            height: 18px;
+            opacity: 0.7;
+        }
+        .nav-item.active svg {
+            opacity: 1;
+        }
+        .sidebar-footer {
+            padding: 16px 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .user-details {
+            flex: 1;
+        }
+        .user-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .user-role {
+            font-size: 12px;
+            color: rgba(255,255,255,0.5);
+        }
+        .logout-btn {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            padding: 4px;
+        }
+        .logout-btn:hover {
+            color: white;
+        }
+
+        /* 主内容区 */
+        .main {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            display: flex;
+            flex-direction: column;
+        }
+        .page-header {
+            background: white;
+            border-bottom: 1px solid var(--color-gray-200);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .page-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--color-gray-900);
+        }
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .page-content {
+            flex: 1;
+            padding: 24px;
+        }
+
+        /* 筛选区 */
+        .filter-bar {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .filter-label {
+            font-size: 14px;
+            color: var(--color-gray-600);
+        }
+        .filter-select {
+            height: 36px;
+            padding: 0 12px;
+            border: 1px solid var(--color-gray-300);
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            min-width: 120px;
+        }
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto;
+        }
+        .search-input {
+            height: 36px;
+            width: 240px;
+            padding: 0 12px;
+            border: 1px solid var(--color-gray-300);
+            border-radius: var(--radius-md);
+            font-size: 14px;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+        .search-btn {
+            height: 36px;
+            width: 36px;
+            border: none;
+            background: var(--color-primary);
+            color: white;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .search-btn:hover {
+            background: var(--color-primary-dark);
+        }
+
+        /* 数据表格 */
+        .data-table {
+            background: white;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .table th {
+            background: var(--color-gray-50);
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--color-gray-500);
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--color-gray-200);
+        }
+        .table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--color-gray-100);
+            font-size: 14px;
+            color: var(--color-gray-700);
+        }
+        .table tbody tr:hover {
+            background: var(--color-gray-50);
+        }
+        .table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        .employee-id {
+            font-family: monospace;
+            color: var(--color-gray-500);
+        }
+        .status-tag {
+            display: inline-flex;
+            align-items: center;
+            height: 24px;
+            padding: 0 8px;
+            font-size: 12px;
+            font-weight: 500;
+            border-radius: var(--radius-sm);
+        }
+        .status-active {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+        .status-inactive {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+        .status-disabled {
+            background: var(--color-gray-200);
+            color: var(--color-gray-500);
+        }
+        .action-btns {
+            display: flex;
+            gap: 4px;
+        }
+        .action-btn {
+            padding: 6px 10px;
+            font-size: 12px;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            background: var(--color-gray-100);
+            color: var(--color-gray-700);
+            transition: all 0.2s;
+        }
+        .action-btn:hover {
+            background: var(--color-gray-200);
+        }
+        .action-btn.primary {
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--color-primary);
+        }
+        .action-btn.primary:hover {
+            background: rgba(79, 70, 229, 0.2);
+        }
+        .action-btn.danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--color-danger);
+        }
+        .action-btn.danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        /* 分页 */
+        .pagination-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            background: white;
+            border-top: 1px solid var(--color-gray-200);
+        }
+        .pagination-info {
+            font-size: 14px;
+            color: var(--color-gray-500);
+        }
+        .pagination {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .pagination button {
+            min-width: 32px;
+            height: 32px;
+            border: 1px solid var(--color-gray-300);
+            background: white;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .pagination button:hover:not(:disabled) {
+            background: var(--color-gray-100);
+        }
+        .pagination button.active {
+            background: var(--color-primary);
+            color: white;
+            border-color: var(--color-primary);
+        }
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* 弹窗 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s;
+        }
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal {
+            background: white;
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow: hidden;
+            transform: scale(0.95);
+            transition: transform 0.2s;
+        }
+        .modal-overlay.show .modal {
+            transform: scale(1);
+        }
+        .modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--color-gray-200);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .modal-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-gray-500);
+        }
+        .modal-close:hover {
+            background: var(--color-gray-100);
+        }
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .modal-footer {
+            padding: 16px 20px;
+            border-top: 1px solid var(--color-gray-200);
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        /* 表单项 */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--color-gray-700);
+            margin-bottom: 6px;
+        }
+        .form-label .required {
+            color: var(--color-danger);
+        }
+        .form-input,
+        .form-select {
+            width: 100%;
+            height: 40px;
+            padding: 0 12px;
+            font-size: 14px;
+            border: 1px solid var(--color-gray-300);
+            border-radius: var(--radius-md);
+            background: white;
+        }
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        /* 确认弹窗 */
+        .confirm-modal .modal {
+            max-width: 400px;
+        }
+        .confirm-content {
+            text-align: center;
+            padding: 20px;
+        }
+        .confirm-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #FEE2E2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            color: var(--color-danger);
+        }
+        .confirm-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .confirm-message {
+            font-size: 14px;
+            color: var(--color-gray-500);
+        }
+        .confirm-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        /* Toast 提示 */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background: var(--color-gray-800);
+            color: white;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            z-index: 2000;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .toast.success {
+            background: var(--color-success);
+        }
+        .toast.error {
+            background: var(--color-danger);
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <h1>技能评估系统</h1>
+                <p>管理端</p>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">账号管理</div>
+                    <div class="nav-item active">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                        <span>员工列表</span>
+                    </div>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">题库管理</div>
+                    <div class="nav-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                        </svg>
+                        <span>题目列表</span>
+                    </div>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">考核管理</div>
+                    <div class="nav-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="12" y1="18" x2="12" y2="12"></line>
+                            <line x1="9" y1="15" x2="15" y2="15"></line>
+                        </svg>
+                        <span>创建考核</span>
+                    </div>
+                    <div class="nav-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="3" y1="9" x2="21" y2="9"></line>
+                            <line x1="9" y1="21" x2="9" y2="9"></line>
+                        </svg>
+                        <span>考核监控</span>
+                    </div>
+                    <div class="nav-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                        <span>批阅管理</span>
+                    </div>
+                    <div class="nav-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                        <span>成绩发布</span>
+                    </div>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">数据报表</div>
+                    <div class="nav-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="20" x2="18" y2="10"></line>
+                            <line x1="12" y1="20" x2="12" y2="4"></line>
+                            <line x1="6" y1="20" x2="6" y2="14"></line>
+                        </svg>
+                        <span>数据看板</span>
+                    </div>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">个人中心</div>
+                    <div class="nav-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                        </svg>
+                        <span>系统设置</span>
+                    </div>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar">A</div>
+                    <div class="user-details">
+                        <div class="user-name">管理员</div>
+                        <div class="user-role">Admin</div>
+                    </div>
+                    <button class="logout-btn" onclick="handleLogout()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main">
+            <header class="page-header">
+                <h1 class="page-title">员工管理</h1>
+                <div class="header-actions">
+                    <button class="btn" style="background: var(--color-gray-100); color: var(--color-gray-700);" onclick="handleBatchImport()">
+                        批量导入
+                    </button>
+                    <button class="btn btn-primary" onclick="openAddModal()">
+                        + 新增账号
+                    </button>
+                </div>
+            </header>
+
+            <div class="page-content">
+                <!-- 筛选区 -->
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <span class="filter-label">部门</span>
+                        <select class="filter-select" id="filterDepartment">
+                            <option value="">全部</option>
+                            <option value="技术部">技术部</option>
+                            <option value="运营部">运营部</option>
+                            <option value="客服部">客服部</option>
+                            <option value="市场部">市场部</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">岗位</span>
+                        <select class="filter-select" id="filterPosition">
+                            <option value="">全部</option>
+                            <option value="运维工程师">运维工程师</option>
+                            <option value="运营专员">运营专员</option>
+                            <option value="客服专员">客服专员</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">状态</span>
+                        <select class="filter-select" id="filterStatus">
+                            <option value="">全部</option>
+                            <option value="active">正常</option>
+                            <option value="inactive">禁用</option>
+                        </select>
+                    </div>
+                    <div class="search-box">
+                        <input type="text" class="search-input" id="searchKeyword" placeholder="搜索工号/姓名...">
+                        <button class="search-btn" onclick="handleSearch()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 数据表格 -->
+                <div class="data-table">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>工号</th>
+                                <th>姓名</th>
+                                <th>部门</th>
+                                <th>岗位</th>
+                                <th>状态</th>
+                                <th>创建时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="employeeTableBody">
+                            <!-- 动态渲染 -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 分页 -->
+                <div class="pagination-bar">
+                    <div class="pagination-info">
+                        共 <span id="totalCount">0</span> 条记录，每页 <span id="pageSize">10</span> 条
+                    </div>
+                    <div class="pagination" id="pagination">
+                        <!-- 动态渲染 -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 新增/编辑员工弹窗 -->
+    <div class="modal-overlay" id="employeeModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modalTitle">新增账号</h3>
+                <button class="modal-close" onclick="closeModal()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="employeeForm">
+                    <input type="hidden" id="employeeId">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">工号 <span class="required">*</span></label>
+                            <input type="text" class="form-input" id="formEmployeeId" placeholder="如 E001" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">姓名 <span class="required">*</span></label>
+                            <input type="text" class="form-input" id="formName" placeholder="请输入姓名" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">部门 <span class="required">*</span></label>
+                            <select class="form-select" id="formDepartment" required>
+                                <option value="">请选择部门</option>
+                                <option value="技术部">技术部</option>
+                                <option value="运营部">运营部</option>
+                                <option value="客服部">客服部</option>
+                                <option value="市场部">市场部</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">岗位 <span class="required">*</span></label>
+                            <input type="text" class="form-input" id="formPosition" placeholder="如 运维工程师" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">初始密码</label>
+                            <input type="password" class="form-input" id="formPassword" placeholder="留空则使用默认密码">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">状态</label>
+                            <select class="form-select" id="formStatus">
+                                <option value="active">正常</option>
+                                <option value="inactive">禁用</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" style="background: var(--color-gray-100); color: var(--color-gray-700);" onclick="closeModal()">取消</button>
+                <button class="btn btn-primary" onclick="handleSave()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 确认弹窗 -->
+    <div class="modal-overlay confirm-modal" id="confirmModal">
+        <div class="modal">
+            <div class="confirm-content">
+                <div class="confirm-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                </div>
+                <div class="confirm-title" id="confirmTitle">确认操作</div>
+                <div class="confirm-message" id="confirmMessage">确定要执行此操作吗？</div>
+                <div class="confirm-actions">
+                    <button class="btn" style="background: var(--color-gray-100); color: var(--color-gray-700);" onclick="closeConfirmModal()">取消</button>
+                    <button class="btn" id="confirmBtn" style="background: var(--color-danger); color: white;">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script src="../shared/js/utils.js"></script>
+    <script>
+        // 状态配置
+        const STATUS_MAP = {
+            active: { text: '正常', class: 'status-active' },
+            inactive: { text: '禁用', class: 'status-inactive' }
+        };
+
+        // 分页状态
+        let pagination = {
+            page: 1,
+            pageSize: 10,
+            total: 0,
+            totalPages: 0
+        };
+
+        // 当前编辑的员工
+        let currentEditEmployee = null;
+
+        // 格式化日期
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        }
+
+        // 显示 Toast
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // 渲染表格
+        function renderTable(employees) {
+            const tbody = document.getElementById('employeeTableBody');
+            if (!employees || employees.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--color-gray-400);">暂无数据</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = employees.map(emp => {
+                const status = STATUS_MAP[emp.status] || STATUS_MAP.inactive;
+                return `
+                    <tr>
+                        <td class="employee-id">${emp.id}</td>
+                        <td>${emp.name}</td>
+                        <td>${emp.department}</td>
+                        <td>${emp.position}</td>
+                        <td><span class="status-tag ${status.class}">${status.text}</span></td>
+                        <td>${formatDate(emp.createdAt)}</td>
+                        <td>
+                            <div class="action-btns">
+                                <button class="action-btn primary" onclick="handleView('${emp.id}')">查看</button>
+                                <button class="action-btn" onclick="handleEdit('${emp.id}')">编辑</button>
+                                <button class="action-btn ${emp.status === 'active' ? 'danger' : 'primary'}" onclick="handleToggleStatus('${emp.id}')">
+                                    ${emp.status === 'active' ? '禁用' : '启用'}
+                                </button>
+                                <button class="action-btn" onclick="handleResetPassword('${emp.id}')">重置密码</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // 渲染分页
+        function renderPagination() {
+            const container = document.getElementById('pagination');
+            const { page, totalPages } = pagination;
+
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = `
+                <button ${page <= 1 ? 'disabled' : ''} onclick="goToPage(${page - 1})">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </button>
+            `;
+
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= page - 2 && i <= page + 2)) {
+                    html += `<button class="${i === page ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+                } else if (i === page - 3 || i === page + 3) {
+                    html += `<span style="padding: 0 8px;">...</span>`;
+                }
+            }
+
+            html += `
+                <button ${page >= totalPages ? 'disabled' : ''} onclick="goToPage(${page + 1})">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // 更新分页信息
+        function updatePaginationInfo() {
+            document.getElementById('totalCount').textContent = pagination.total;
+            document.getElementById('pageSize').textContent = pagination.pageSize;
+        }
+
+        // 加载数据
+        function loadData() {
+            const department = document.getElementById('filterDepartment').value;
+            const position = document.getElementById('filterPosition').value;
+            const status = document.getElementById('filterStatus').value;
+            const keyword = document.getElementById('searchKeyword').value.toLowerCase();
+
+            // 筛选 Mock 数据
+            let filtered = MockData.employees.filter(emp => {
+                if (department && emp.department !== department) return false;
+                if (position && emp.position !== position) return false;
+                if (status && emp.status !== status) return false;
+                if (keyword) {
+                    if (!emp.id.toLowerCase().includes(keyword) && !emp.name.toLowerCase().includes(keyword)) {
+                        return false;
+                    }
+                }
+                return true;
+            });
+
+            pagination.total = filtered.length;
+            pagination.totalPages = Math.ceil(filtered.length / pagination.pageSize);
+
+            // 分页
+            const start = (pagination.page - 1) * pagination.pageSize;
+            const end = start + pagination.pageSize;
+            const pageData = filtered.slice(start, end);
+
+            updatePaginationInfo();
+            renderTable(pageData);
+            renderPagination();
+        }
+
+        // 搜索
+        function handleSearch() {
+            pagination.page = 1;
+            loadData();
+        }
+
+        // 分页跳转
+        function goToPage(page) {
+            if (page < 1 || page > pagination.totalPages) return;
+            pagination.page = page;
+            loadData();
+        }
+
+        // 打开新增弹窗
+        function openAddModal() {
+            currentEditEmployee = null;
+            document.getElementById('modalTitle').textContent = '新增账号';
+            document.getElementById('employeeForm').reset();
+            document.getElementById('employeeId').value = '';
+            document.getElementById('employeeModal').classList.add('show');
+        }
+
+        // 编辑员工
+        function handleEdit(id) {
+            const employee = MockData.employees.find(e => e.id === id);
+            if (!employee) return;
+
+            currentEditEmployee = employee;
+            document.getElementById('modalTitle').textContent = '编辑账号';
+            document.getElementById('employeeId').value = id;
+            document.getElementById('formEmployeeId').value = employee.id;
+            document.getElementById('formName').value = employee.name;
+            document.getElementById('formDepartment').value = employee.department;
+            document.getElementById('formPosition').value = employee.position;
+            document.getElementById('formStatus').value = employee.status;
+            document.getElementById('formPassword').value = '';
+
+            document.getElementById('employeeModal').classList.add('show');
+        }
+
+        // 查看员工
+        function handleView(id) {
+            const employee = MockData.employees.find(e => e.id === id);
+            if (!employee) return;
+
+            currentEditEmployee = employee;
+            document.getElementById('modalTitle').textContent = '查看账号';
+            document.getElementById('formEmployeeId').value = employee.id;
+            document.getElementById('formName').value = employee.name;
+            document.getElementById('formDepartment').value = employee.department;
+            document.getElementById('formPosition').value = employee.position;
+            document.getElementById('formStatus').value = employee.status;
+            document.getElementById('formPassword').value = '';
+
+            // 只读模式
+            document.getElementById('formEmployeeId').readOnly = true;
+            document.getElementById('formName').readOnly = true;
+            document.getElementById('formDepartment').disabled = true;
+            document.getElementById('formPosition').readOnly = true;
+            document.getElementById('formStatus').disabled = true;
+            document.getElementById('formPassword').disabled = true;
+
+            document.getElementById('employeeModal').classList.add('show');
+        }
+
+        // 关闭弹窗
+        function closeModal() {
+            document.getElementById('employeeModal').classList.remove('show');
+            // 恢复只读状态
+            document.getElementById('formEmployeeId').readOnly = false;
+            document.getElementById('formName').readOnly = false;
+            document.getElementById('formDepartment').disabled = false;
+            document.getElementById('formPosition').readOnly = false;
+            document.getElementById('formStatus').disabled = false;
+            document.getElementById('formPassword').disabled = false;
+        }
+
+        // 保存
+        function handleSave() {
+            const id = document.getElementById('formEmployeeId').value.trim();
+            const name = document.getElementById('formName').value.trim();
+            const department = document.getElementById('formDepartment').value;
+            const position = document.getElementById('formPosition').value.trim();
+            const status = document.getElementById('formStatus').value;
+
+            // 验证
+            if (!id || !name || !department || !position) {
+                showToast('请填写必填项', 'error');
+                return;
+            }
+
+            if (currentEditEmployee) {
+                // 编辑模式
+                const index = MockData.employees.findIndex(e => e.id === currentEditEmployee.id);
+                if (index !== -1) {
+                    MockData.employees[index] = {
+                        ...MockData.employees[index],
+                        id,
+                        name,
+                        department,
+                        position,
+                        status
+                    };
+                }
+                showToast('保存成功');
+            } else {
+                // 新增模式
+                if (MockData.employees.some(e => e.id === id)) {
+                    showToast('工号已存在', 'error');
+                    return;
+                }
+                MockData.employees.push({
+                    id,
+                    name,
+                    department,
+                    position,
+                    status,
+                    createdAt: new Date().toISOString().split('T')[0]
+                });
+                showToast('新增成功');
+            }
+
+            closeModal();
+            loadData();
+        }
+
+        // 切换状态
+        let pendingAction = null;
+
+        function handleToggleStatus(id) {
+            const employee = MockData.employees.find(e => e.id === id);
+            if (!employee) return;
+
+            const action = employee.status === 'active' ? '禁用' : '启用';
+            document.getElementById('confirmTitle').textContent = `${action}账号`;
+            document.getElementById('confirmMessage').textContent = `确定要${action}员工 "${employee.name}" 吗？`;
+            document.getElementById('confirmBtn').style.background = employee.status === 'active' ? 'var(--color-danger)' : 'var(--color-primary)';
+
+            pendingAction = { type: 'toggleStatus', id };
+            document.getElementById('confirmModal').classList.add('show');
+        }
+
+        // 重置密码
+        function handleResetPassword(id) {
+            const employee = MockData.employees.find(e => e.id === id);
+            if (!employee) return;
+
+            document.getElementById('confirmTitle').textContent = '重置密码';
+            document.getElementById('confirmMessage').textContent = `确定要重置员工 "${employee.name}" 的密码吗？`;
+            document.getElementById('confirmBtn').style.background = 'var(--color-warning)';
+
+            pendingAction = { type: 'resetPassword', id };
+            document.getElementById('confirmModal').classList.add('show');
+        }
+
+        // 确认操作
+        document.getElementById('confirmBtn').addEventListener('click', () => {
+            if (!pendingAction) return;
+
+            if (pendingAction.type === 'toggleStatus') {
+                const employee = MockData.employees.find(e => e.id === pendingAction.id);
+                if (employee) {
+                    employee.status = employee.status === 'active' ? 'inactive' : 'active';
+                    showToast(`${employee.status === 'active' ? '启用' : '禁用'}成功`);
+                }
+            } else if (pendingAction.type === 'resetPassword') {
+                showToast('密码已重置为默认密码');
+            }
+
+            closeConfirmModal();
+            loadData();
+        });
+
+        // 关闭确认弹窗
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.remove('show');
+            pendingAction = null;
+        }
+
+        // 批量导入
+        function handleBatchImport() {
+            showToast('批量导入功能开发中', 'error');
+        }
+
+        // 登出
+        function handleLogout() {
+            window.location.href = 'login.html';
+        }
+
+        // 筛选联动
+        ['filterDepartment', 'filterPosition', 'filterStatus'].forEach(id => {
+            document.getElementById(id).addEventListener('change', () => {
+                pagination.page = 1;
+                loadData();
+            });
+        });
+
+        // 搜索框回车
+        document.getElementById('searchKeyword').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleSearch();
+            }
+        });
+
+        // 点击弹窗背景关闭
+        document.getElementById('employeeModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('employeeModal')) {
+                closeModal();
+            }
+        });
+
+        document.getElementById('confirmModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('confirmModal')) {
+                closeConfirmModal();
+            }
+        });
+
+        // 初始化
+        loadData();
+    </script>
+</body>
+</html>

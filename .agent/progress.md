@@ -9,7 +9,7 @@
 | 页面 | 文件 | 状态 | 备注 |
 |------|------|------|------|
 | 登录页 | admin/login.html | done | PHASE0-001 |
-| 员工列表页 | admin/employee-list.html | pending | |
+| 员工列表页 | admin/employee-list.html | done | PHASE0-002 |
 | 题库列表页 | admin/question-list.html | pending | |
 | 创建考核-Step1 | admin/exam-create-step1.html | pending | |
 | 创建考核-Step2 | admin/exam-create-step2.html | pending | |
