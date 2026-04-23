@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成绩发布 - Dmall Helpdesk 技能评估系统</title>
+    <link rel="stylesheet" href="../shared/css/theme.css">
+    <style>
+        :root { --sidebar-width: 240px; }
+        .layout { display: flex; min-height: 100vh; }
+        .sidebar { width: var(--sidebar-width); background: var(--bg-sidebar); color: white; position: fixed; height: 100vh; display: flex; flex-direction: column; }
+        .sidebar-logo { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-logo h1 { font-size: 16px; font-weight: 600; }
+        .sidebar-logo p { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 4px; }
+        .sidebar-nav { flex: 1; padding: 16px 0; overflow-y: auto; }
+        .nav-section { margin-bottom: 24px; }
+        .nav-section-title { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.4); text-transform: uppercase; padding: 0 20px; margin-bottom: 8px; }
+        .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; font-size: 14px; color: rgba(255,255,255,0.7); cursor: pointer; transition: all 0.2s; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
+        .nav-item.active { background: rgba(79, 70, 229, 0.3); color: white; border-right: 3px solid var(--color-primary); }
+        .sidebar-footer { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; }
+        .user-details { flex: 1; }
+        .user-name { font-size: 14px; font-weight: 500; }
+        .user-role { font-size: 12px; color: rgba(255,255,255,0.5); }
+        .main { flex: 1; margin-left: var(--sidebar-width); display: flex; flex-direction: column; }
+        .page-header { background: white; border-bottom: 1px solid var(--color-gray-200); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
+        .page-title { font-size: 18px; font-weight: 600; color: var(--color-gray-900); }
+        .page-content { flex: 1; padding: 24px; }
+        .content-layout { display: flex; gap: 24px; }
+        .stats-panel { flex: 1; background: white; border-radius: var(--radius-lg); padding: 24px; }
+        .exam-selector { margin-bottom: 24px; }
+        .exam-selector label { font-size: 14px; font-weight: 500; color: var(--color-gray-700); margin-right: 12px; }
+        .exam-selector select { height: 40px; padding: 0 12px; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md); font-size: 14px; min-width: 200px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: var(--color-gray-50); border-radius: var(--radius-md); padding: 20px; text-align: center; }
+        .stat-value { font-size: 32px; font-weight: 700; color: var(--color-gray-900); }
+        .stat-label { font-size: 13px; color: var(--color-gray-500); margin-top: 4px; }
+        .stat-value.green { color: var(--color-success); }
+        .stat-value.orange { color: var(--color-warning); }
+        .stat-value.red { color: var(--color-danger); }
+        /* 成绩分布 */
+        .score-distribution { margin-bottom: 24px; }
+        .section-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: var(--color-gray-900); }
+        .distribution-bars { display: flex; align-items: flex-end; gap: 12px; height: 120px; }
+        .dist-bar { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .dist-bar-fill { width: 100%; background: var(--color-primary); border-radius: 4px 4px 0 0; transition: height 0.3s; }
+        .dist-bar-label { font-size: 12px; color: var(--color-gray-500); }
+        .dist-bar-value { font-size: 14px; font-weight: 600; color: var(--color-gray-700); }
+        /* 及格率图 */
+        .pass-rate-chart { display: flex; align-items: center; gap: 24px; }
+        .donut-chart { width: 120px; height: 120px; position: relative; }
+        .donut-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+        .donut-value { font-size: 24px; font-weight: 700; color: var(--color-success); }
+        .donut-label { font-size: 12px; color: var(--color-gray-500); }
+        .pass-legend { display: flex; flex-direction: column; gap: 12px; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .legend-dot.pass { background: var(--color-success); }
+        .legend-dot.fail { background: var(--color-danger); }
+        /* 操作面板 */
+        .action-panel { width: 320px; background: white; border-radius: var(--radius-lg); padding: 24px; display: flex; flex-direction: column; }
+        .action-title { font-size: 16px; font-weight: 600; margin-bottom: 20px; color: var(--color-gray-900); }
+        .action-info { margin-bottom: 20px; }
+        .action-info-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--color-gray-100); font-size: 14px; }
+        .action-info-item:last-child { border-bottom: none; }
+        .action-info-label { color: var(--color-gray-500); }
+        .action-info-value { font-weight: 500; color: var(--color-gray-900); }
+        .checkbox-item { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; cursor: pointer; font-size: 14px; }
+        .checkbox-item input { accent-color: var(--color-primary); }
+        .btn { display: flex; align-items: center; justify-content: center; height: 44px; padding: 0 20px; font-size: 14px; font-weight: 500; border: none; border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s; width: 100%; margin-bottom: 8px; }
+        .btn-primary { background-color: var(--color-success); color: white; }
+        .btn-primary:hover { background-color: #059669; }
+        .btn-secondary { background-color: var(--color-gray-100); color: var(--color-gray-700); }
+        .toast { position: fixed; top: 20px; right: 20px; padding: 12px 20px; background: var(--color-gray-800); color: white; border-radius: var(--radius-md); font-size: 14px; z-index: 2000; opacity: 0; transform: translateY(-10px); transition: all 0.3s; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.success { background: var(--color-success); }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo"><h1>技能评估系统</h1><p>管理端</p></div>
+            <nav class="sidebar-nav">
+                <div class="nav-section"><div class="nav-section-title">账号管理</div><div class="nav-item"><span>员工列表</span></div></div>
+                <div class="nav-section"><div class="nav-section-title">题库管理</div><div class="nav-item"><span>题目列表</span></div></div>
+                <div class="nav-section"><div class="nav-section-title">考核管理</div><div class="nav-item"><span>创建考核</span></div><div class="nav-item"><span>考核监控</span></div><div class="nav-item"><span>批阅管理</span></div><div class="nav-item active"><span>成绩发布</span></div></div>
+            </nav>
+            <div class="sidebar-footer"><div class="user-info"><div class="user-avatar">A</div><div class="user-details"><div class="user-name">管理员</div><div class="user-role">Admin</div></div></div></div>
+        </aside>
+
+        <main class="main">
+            <header class="page-header"><h1 class="page-title">成绩发布</h1></header>
+            <div class="page-content">
+                <div class="content-layout">
+                    <div class="stats-panel">
+                        <div class="exam-selector">
+                            <label>选择考核</label>
+                            <select><option>Linux 基础考核</option></select>
+                        </div>
+
+                        <div class="stats-grid">
+                            <div class="stat-card"><div class="stat-value">10</div><div class="stat-label">参与人数</div></div>
+                            <div class="stat-card"><div class="stat-value green">7</div><div class="stat-label">及格人数</div></div>
+                            <div class="stat-card"><div class="stat-value orange">3</div><div class="stat-label">不及格人数</div></div>
+                            <div class="stat-card"><div class="stat-value">85.2</div><div class="stat-label">平均分</div></div>
+                        </div>
+
+                        <div class="score-distribution">
+                            <h3 class="section-title">成绩分布</h3>
+                            <div class="distribution-bars">
+                                <div class="dist-bar"><div class="dist-bar-fill" style="height: 30px;"></div><div class="dist-bar-value">1</div><div class="dist-bar-label">0-59</div></div>
+                                <div class="dist-bar"><div class="dist-bar-fill" style="height: 60px; background: var(--color-warning);"></div><div class="dist-bar-value">2</div><div class="dist-bar-label">60-69</div></div>
+                                <div class="dist-bar"><div class="dist-bar-fill" style="height: 80px; background: var(--color-success);"></div><div class="dist-bar-value">3</div><div class="dist-bar-label">70-79</div></div>
+                                <div class="dist-bar"><div class="dist-bar-fill" style="height: 90px; background: var(--color-success);"></div><div class="dist-bar-value">3</div><div class="dist-bar-label">80-89</div></div>
+                                <div class="dist-bar"><div class="dist-bar-fill" style="height: 50px; background: var(--color-primary);"></div><div class="dist-bar-value">1</div><div class="dist-bar-label">90-100</div></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="section-title">及格率</h3>
+                            <div class="pass-rate-chart">
+                                <div class="donut-chart">
+                                    <svg viewBox="0 0 36 36" width="120" height="120">
+                                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#E5E7EB" stroke-width="3"></path>
+                                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#10B981" stroke-width="3" stroke-dasharray="70, 100"></path>
+                                    </svg>
+                                    <div class="donut-center"><div class="donut-value">70%</div><div class="donut-label">及格率</div></div>
+                                </div>
+                                <div class="pass-legend">
+                                    <div class="legend-item"><span class="legend-dot pass"></span>及格（70分及以上）</div>
+                                    <div class="legend-item"><span class="legend-dot fail"></span>不及格（70分以下）</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="action-panel">
+                        <h3 class="action-title">发布设置</h3>
+                        <div class="action-info">
+                            <div class="action-info-item"><span class="action-info-label">考核名称</span><span class="action-info-value">Linux 基础考核</span></div>
+                            <div class="action-info-item"><span class="action-info-label">参与人数</span><span class="action-info-value">10人</span></div>
+                            <div class="action-info-item"><span class="action-info-label">平均分</span><span class="action-info-value">85.2分</span></div>
+                            <div class="action-info-item"><span class="action-info-label">及格率</span><span class="action-info-value">70%</span></div>
+                        </div>
+                        <label class="checkbox-item"><input type="checkbox" checked><span>发送站内通知</span></label>
+                        <label class="checkbox-item"><input type="checkbox"><span>发送短信通知</span></label>
+                        <label class="checkbox-item"><input type="checkbox"><span>发送邮件通知</span></label>
+                        <div style="flex: 1;"></div>
+                        <button class="btn btn-primary" onclick="handlePublish()">发布成绩</button>
+                        <button class="btn btn-secondary">保存报表</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <div class="toast" id="toast"></div>
+    <script src="../shared/js/utils.js"></script>
+    <script>
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+        function handlePublish() {
+            showToast('成绩已发布，通知已发送');
+        }
+    </script>
+</body>
+</html>

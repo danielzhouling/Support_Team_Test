@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成绩展示 - Dmall Helpdesk 技能评估系统</title>
+    <link rel="stylesheet" href="../shared/css/theme.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', -apple-system, sans-serif; background: #f3f4f6; }
+        .app { max-width: 430px; margin: 0 auto; min-height: 100vh; background: linear-gradient(180deg, #667eea 0%, #764ba2 100%); padding-bottom: 80px; }
+        .header { padding: 60px 16px 40px; text-align: center; color: white; }
+        .header-sub { font-size: 13px; opacity: 0.8; margin-bottom: 4px; }
+        .header-title { font-size: 20px; font-weight: 600; margin-bottom: 24px; }
+        .score-circle { width: 120px; height: 120px; border-radius: 50%; background: rgba(255,255,255,0.2); margin: 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 4px solid white; }
+        .score-number { font-size: 42px; font-weight: 700; line-height: 1; }
+        .score-unit { font-size: 13px; opacity: 0.8; }
+        .content { padding: 0 16px 16px; }
+        .card { background: white; border-radius: 12px; padding: 18px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .card-title { font-size: 14px; font-weight: 600; color: #1f2937; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
+        .stats-row { display: flex; gap: 12px; }
+        .stat-mini { flex: 1; background: #f9fafb; border-radius: 8px; padding: 12px; text-align: center; }
+        .stat-value { font-size: 20px; font-weight: 700; color: #1f2937; }
+        .stat-label { font-size: 11px; color: #6b7280; margin-top: 2px; }
+        .dimension-list { display: flex; flex-direction: column; gap: 10px; }
+        .dimension-item { display: flex; align-items: center; gap: 10px; }
+        .dimension-name { width: 70px; font-size: 13px; color: #6b7280; flex-shrink: 0; }
+        .dimension-bar-bg { flex: 1; height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; }
+        .dimension-bar-fill { height: 100%; border-radius: 4px; background: #667eea; transition: width 0.5s; }
+        .dimension-score { width: 40px; text-align: right; font-size: 13px; font-weight: 600; color: #1f2937; }
+        .weak-list { display: flex; flex-direction: column; gap: 8px; }
+        .weak-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #fef2f2; border-radius: 8px; }
+        .weak-icon { color: #ef4444; }
+        .weak-text { flex: 1; font-size: 13px; color: #991b1b; }
+        .suggestion-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f3f4f6; font-size: 13px; color: #374151; line-height: 1.5; }
+        .suggestion-item:last-child { border-bottom: none; }
+        .suggestion-num { width: 20px; height: 20px; background: #667eea; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+        .action-btn { width: 100%; height: 48px; background: white; color: #667eea; border: 2px solid #667eea; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
+        .action-btn.primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; }
+        .tab-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 430px; background: white; border-top: 1px solid #e5e7eb; display: flex; padding: 8px 0; padding-bottom: env(safe-area-inset-bottom, 8px); }
+        .tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; color: #9ca3af; font-size: 10px; }
+        .tab-item.active { color: #667eea; }
+        .tab-item svg { width: 22px; height: 22px; }
+        .pass-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background: #d1fae5; color: #065f46; border-radius: 6px; font-size: 12px; font-weight: 500; }
+        .fail-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background: #fee2e2; color: #991b1b; border-radius: 6px; font-size: 12px; font-weight: 500; }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <div class="header">
+            <div class="header-sub">网络知识月度考核</div>
+            <div class="header-title">考核完成</div>
+            <div class="score-circle">
+                <div class="score-number">85</div>
+                <div class="score-unit">分</div>
+            </div>
+            <div style="margin-top: 12px;">
+                <span class="pass-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>及格</span>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="card">
+                <div class="card-title">答题概览</div>
+                <div class="stats-row">
+                    <div class="stat-mini"><div class="stat-value">85%</div><div class="stat-label">正确率</div></div>
+                    <div class="stat-mini"><div class="stat-value">28分钟</div><div class="stat-label">用时</div></div>
+                    <div class="stat-mini"><div class="stat-value">10题</div><div class="stat-label">总题数</div></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">各维度得分</div>
+                <div class="dimension-list">
+                    <div class="dimension-item">
+                        <span class="dimension-name">网络基础</span>
+                        <div class="dimension-bar-bg"><div class="dimension-bar-fill" style="width: 90%;"></div></div>
+                        <span class="dimension-score">90</span>
+                    </div>
+                    <div class="dimension-item">
+                        <span class="dimension-name">协议理解</span>
+                        <div class="dimension-bar-bg"><div class="dimension-bar-fill" style="width: 75%;"></div></div>
+                        <span class="dimension-score">75</span>
+                    </div>
+                    <div class="dimension-item">
+                        <span class="dimension-name">故障排查</span>
+                        <div class="dimension-bar-bg"><div class="dimension-bar-fill" style="width: 60%;"></div></div>
+                        <span class="dimension-score">60</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">薄弱点分析</div>
+                <div class="weak-list">
+                    <div class="weak-item">
+                        <span class="weak-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg></span>
+                        <span class="weak-text">TCP/UDP协议理解需要加强</span>
+                    </div>
+                    <div class="weak-item">
+                        <span class="weak-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg></span>
+                        <span class="weak-text">子网划分计算速度待提升</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">学习建议</div>
+                <div class="suggestion-item">
+                    <span class="suggestion-num">1</span>
+                    <span>建议回顾《TCP/IP详解》协议章节，重点理解三次握手和四次挥手过程。</span>
+                </div>
+                <div class="suggestion-item">
+                    <span class="suggestion-num">2</span>
+                    <span>多做子网划分练习题，熟练掌握CIDR和可变长子网掩码计算。</span>
+                </div>
+                <div class="suggestion-item">
+                    <span class="suggestion-num">3</span>
+                    <span>推荐参加下周的网络故障模拟演练，实战提升排查能力。</span>
+                </div>
+            </div>
+
+            <button class="action-btn primary" onclick="location.href='index.html'">返回首页</button>
+            <button class="action-btn" onclick="location.href='exam-list.html'">查看答卷详情</button>
+        </div>
+    </div>
+
+    <div class="tab-bar">
+        <div class="tab-item" onclick="location.href='index.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg><span>首页</span></div>
+        <div class="tab-item" onclick="location.href='exam-list.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg><span>考核</span></div>
+        <div class="tab-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path></svg><span>学习</span></div>
+        <div class="tab-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg><span>我的</span></div>
+    </div>
+</body>
+</html>

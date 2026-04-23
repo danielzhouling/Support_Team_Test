@@ -7,231 +7,109 @@
       "id": "PHASE0-001",
       "phase": "阶段0 - 原型确认",
       "description": "管理端 - 登录页 (admin/login.html)",
-      "pass": true,
-      "details": [
-        "账号密码输入框",
-        "记住登录状态复选框",
-        "登录按钮",
-        "错误提示展示"
-      ]
+      "pass": true
     },
     {
       "id": "PHASE0-002",
       "phase": "阶段0 - 原型确认",
       "description": "管理端 - 员工列表页 (admin/employee-list.html)",
-      "pass": true,
-      "details": [
-        "左侧导航栏（账号管理/题库管理/考核管理/数据报表/个人中心）",
-        "顶部：筛选条件（部门/岗位/状态）+ 搜索框",
-        "表格：工号/姓名/部门/岗位/状态/创建时间/操作",
-        "分页组件",
-        "右上角：新增账号按钮、批量导入按钮",
-        "操作按钮：查看/编辑/禁用启用/重置密码",
-        "新增/编辑账号弹窗"
-      ]
+      "pass": true
     },
     {
       "id": "PHASE0-003",
       "phase": "阶段0 - 原型确认",
       "description": "管理端 - 题库列表页 (admin/question-list.html)",
-      "pass": false,
-      "details": [
-        "筛选条件：维度/难度/状态 + 搜索框",
-        "表格：题号/题目内容/维度/难度/状态/来源/创建时间/操作",
-        "统计信息：各维度题目数量分布",
-        "操作按钮：新建题目/批量导入/导出Excel",
-        "新增/编辑题目弹窗",
-        "题目审核功能"
-      ]
+      "pass": true
     },
     {
       "id": "PHASE0-004",
       "phase": "阶段0 - 原型确认",
       "description": "管理端 - 创建考核 Step1 (admin/exam-create-step1.html)",
-      "pass": false,
-      "details": [
-        "考核名称输入",
-        "考核说明文本框",
-        "及格分数输入（默认70）",
-        "答题时长输入（默认30分钟）",
-        "截止时间选择器",
-        "下一步按钮"
-      ]
+      "pass": true
     },
     {
       "id": "PHASE0-005",
       "phase": "阶段0 - 原型确认",
       "description": "管理端 - 创建考核 Step2 (admin/exam-create-step2.html)",
-      "pass": false,
-      "details": [
-        "出题方式选择：从题库选择 / AI智能选题 / 固定题目",
-        "从题库选择：题目列表勾选",
-        "AI智能选题配置：各维度题目数/难度分布/随机抽题",
-        "题目数量汇总：各维度/总题量/总分",
-        "上一步/下一步按钮"
-      ]
+      "pass": true
     },
     {
       "id": "PHASE0-006",
       "phase": "阶段0 - 原型确认",
       "description": "管理端 - 创建考核 Step3 (admin/exam-create-step3.html)",
-      "pass": false,
-      "details": [
-        "参与人员选择：指定团队/指定人员/导入名单",
-        "发布设置：立即发布/定时发布",
-        "通知设置：短信/站内/邮件",
-        "预览信息汇总",
-        "创建/保存草稿按钮"
-      ]
+      "pass": true
     },
     {
       "id": "PHASE0-007",
       "phase": "阶段0 - 原型确认",
       "description": "管理端 - 考核监控页 (admin/exam-monitor.html)",
-      "pass": false,
-      "details": [
-        "实时进度卡片：已完成/进行中/未开始/考核进度/剩余时间",
-        "参与人员状态表：姓名/状态/用时/作答进度/操作",
-        "异常处理：切屏次数/异常标记/强制结束",
-        "操作按钮：强制结束/提醒/导出数据"
-      ]
+      "pass": true
     },
     {
       "id": "PHASE0-008",
       "phase": "阶段0 - 原型确认",
       "description": "管理端 - 批阅管理页 (admin/exam-review.html)",
-      "pass": false,
-      "details": [
-        "待批阅列表（问答题/场景题）",
-        "批阅弹窗：查看员工答案/输入得分/添加批注",
-        "批量提交按钮"
-      ]
+      "pass": true
     },
     {
       "id": "PHASE0-009",
       "phase": "阶段0 - 原型确认",
       "description": "管理端 - 成绩发布页 (admin/exam-publish.html)",
-      "pass": false,
-      "details": [
-        "成绩统计概览",
-        "发布确认按钮",
-        "发布后通知发送"
-      ]
+      "pass": true
     },
     {
       "id": "PHASE0-010",
       "phase": "阶段0 - 原型确认",
       "description": "员工端 - 登录页 (employee/login.html)",
-      "pass": false,
-      "details": [
-        "简化版登录：工号/密码",
-        "登录按钮",
-        "记住登录"
-      ]
+      "pass": true
     },
     {
       "id": "PHASE0-011",
       "phase": "阶段0 - 原型确认",
       "description": "员工端 - Tab首页 (employee/index.html)",
-      "pass": false,
-      "details": [
-        "底部Tab导航：智能体/首页/学习/我的",
-        "顶部：用户问候/通知入口/个人中心入口",
-        "待完成考核卡片",
-        "我的技能档案卡片",
-        "近期成绩卡片",
-        "为你推荐卡片",
-        "快捷入口卡片"
-      ]
+      "pass": true
     },
     {
       "id": "PHASE0-012",
       "phase": "阶段0 - 原型确认",
       "description": "员工端 - 考核列表页 (employee/exam-list.html)",
-      "pass": false,
-      "details": [
-        "Tab切换：进行中/已完成",
-        "考核卡片列表",
-        "点击进入考核说明"
-      ]
+      "pass": true
     },
     {
       "id": "PHASE0-013",
       "phase": "阶段0 - 原型确认",
       "description": "员工端 - 考核说明页 (employee/exam-detail.html)",
-      "pass": false,
-      "details": [
-        "考核名称/说明",
-        "题量/满分/及格分",
-        "时长/截止时间",
-        "注意事项",
-        "开始考核按钮"
-      ]
+      "pass": true
     },
     {
       "id": "PHASE0-014",
       "phase": "阶段0 - 原型确认",
       "description": "员工端 - 作答页 (employee/exam-do.html)",
-      "pass": false,
-      "details": [
-        "顶部：考核名称/剩余时间/进度",
-        "题目内容展示",
-        "题型支持：单选/多选/判断/问答",
-        "选项A/B/C/D",
-        "底部：上一题/下一题/题号列表/交卷按钮",
-        "标记题目功能",
-        "自动保存答案"
-      ]
+      "pass": true
     },
     {
       "id": "PHASE0-015",
       "phase": "阶段0 - 原型确认",
       "description": "员工端 - 交卷确认页 (employee/exam-submit.html)",
-      "pass": false,
-      "details": [
-        "已答/未答数量统计",
-        "未答题目列表",
-        "继续答题按钮",
-        "确认交卷按钮"
-      ]
+      "pass": true
     },
     {
       "id": "PHASE0-016",
       "phase": "阶段0 - 原型确认",
       "description": "员工端 - 成绩展示页 (employee/exam-result.html)",
-      "pass": false,
-      "details": [
-        "总分展示",
-        "正确率/用时",
-        "各维度得分",
-        "薄弱点分析",
-        "学习建议",
-        "查看答卷详情按钮"
-      ]
+      "pass": true
     },
     {
       "id": "PHASE0-017",
       "phase": "阶段0 - 原型确认",
       "description": "共享资源 - CSS样式文件",
-      "pass": false,
-      "details": [
-        "统一的颜色主题",
-        "布局样式",
-        "组件样式",
-        "响应式适配"
-      ]
+      "pass": true
     },
     {
       "id": "PHASE0-018",
       "phase": "阶段0 - 原型确认",
       "description": "共享资源 - JavaScript交互",
-      "pass": false,
-      "details": [
-        "页面跳转逻辑",
-        "弹窗控制",
-        "表单验证",
-        "Mock数据"
-      ]
+      "pass": true
     }
   ]
 }

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>创建考核 - Step2 - Dmall Helpdesk 技能评估系统</title>
+    <link rel="stylesheet" href="../shared/css/theme.css">
+    <style>
+        :root { --sidebar-width: 240px; }
+        .layout { display: flex; min-height: 100vh; }
+        .sidebar { width: var(--sidebar-width); background: var(--bg-sidebar); color: white; position: fixed; height: 100vh; display: flex; flex-direction: column; }
+        .sidebar-logo { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-logo h1 { font-size: 16px; font-weight: 600; }
+        .sidebar-logo p { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 4px; }
+        .sidebar-nav { flex: 1; padding: 16px 0; overflow-y: auto; }
+        .nav-section { margin-bottom: 24px; }
+        .nav-section-title { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.4); text-transform: uppercase; padding: 0 20px; margin-bottom: 8px; }
+        .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; font-size: 14px; color: rgba(255,255,255,0.7); cursor: pointer; transition: all 0.2s; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
+        .nav-item.active { background: rgba(79, 70, 229, 0.3); color: white; border-right: 3px solid var(--color-primary); }
+        .sidebar-footer { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; }
+        .user-details { flex: 1; }
+        .user-name { font-size: 14px; font-weight: 500; }
+        .user-role { font-size: 12px; color: rgba(255,255,255,0.5); }
+        .main { flex: 1; margin-left: var(--sidebar-width); display: flex; flex-direction: column; }
+        .page-header { background: white; border-bottom: 1px solid var(--color-gray-200); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
+        .page-title { font-size: 18px; font-weight: 600; color: var(--color-gray-900); }
+        .page-content { flex: 1; padding: 24px; }
+        .step-bar { background: white; border-radius: var(--radius-lg); padding: 24px 32px; margin-bottom: 24px; display: flex; align-items: center; justify-content: center; }
+        .step-item { display: flex; align-items: center; gap: 8px; }
+        .step-num { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; }
+        .step-num.active { background: var(--color-primary); color: white; }
+        .step-num.done { background: var(--color-success); color: white; }
+        .step-num.pending { background: var(--color-gray-200); color: var(--color-gray-500); }
+        .step-label { font-size: 14px; font-weight: 500; }
+        .step-label.active { color: var(--color-primary); }
+        .step-label.done { color: var(--color-success); }
+        .step-label.pending { color: var(--color-gray-400); }
+        .step-line { width: 80px; height: 2px; background: var(--color-gray-200); margin: 0 16px; }
+        .step-line.done { background: var(--color-success); }
+        .content-layout { display: flex; gap: 24px; }
+        .question-panel { flex: 1; background: white; border-radius: var(--radius-lg); overflow: hidden; }
+        .panel-header { padding: 16px 20px; border-bottom: 1px solid var(--color-gray-200); display: flex; align-items: center; justify-content: space-between; }
+        .panel-title { font-size: 16px; font-weight: 600; }
+        .question-count { font-size: 14px; color: var(--color-gray-500); }
+        .filter-bar { padding: 12px 20px; border-bottom: 1px solid var(--color-gray-100); display: flex; gap: 12px; flex-wrap: wrap; }
+        .filter-select { height: 32px; padding: 0 10px; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md); font-size: 13px; background: white; }
+        .filter-select:focus { outline: none; border-color: var(--color-primary); }
+        .question-list { max-height: 400px; overflow-y: auto; }
+        .question-item { padding: 14px 20px; border-bottom: 1px solid var(--color-gray-100); display: flex; gap: 12px; align-items: flex-start; cursor: pointer; transition: background 0.2s; }
+        .question-item:hover { background: var(--color-gray-50); }
+        .question-item.selected { background: rgba(79, 70, 229, 0.05); border-left: 3px solid var(--color-primary); }
+        .question-checkbox { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--color-primary); cursor: pointer; }
+        .question-content { flex: 1; }
+        .question-text { font-size: 14px; color: var(--color-gray-800); margin-bottom: 8px; }
+        .question-meta { display: flex; gap: 8px; font-size: 12px; color: var(--color-gray-400); }
+        .question-meta span { display: flex; align-items: center; gap: 4px; }
+        .difficulty-tag { padding: 2px 6px; border-radius: 3px; font-size: 11px; }
+        .diff-easy { background: #D1FAE5; color: #065F46; }
+        .diff-medium { background: #DBEAFE; color: #1E40AF; }
+        .diff-hard { background: #FEE2E2; color: #991B1B; }
+        /* 右侧汇总 */
+        .summary-panel { width: 320px; background: white; border-radius: var(--radius-lg); overflow: hidden; }
+        .summary-header { padding: 16px 20px; border-bottom: 1px solid var(--color-gray-200); }
+        .summary-title { font-size: 16px; font-weight: 600; }
+        .summary-body { padding: 20px; }
+        .summary-section { margin-bottom: 20px; }
+        .summary-section-title { font-size: 12px; font-weight: 600; color: var(--color-gray-500); text-transform: uppercase; margin-bottom: 12px; }
+        .dimension-stat { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--color-gray-100); font-size: 14px; }
+        .dimension-stat:last-child { border-bottom: none; }
+        .dimension-name { color: var(--color-gray-700); }
+        .dimension-count { font-weight: 600; color: var(--color-gray-900); }
+        .total-stat { background: var(--color-gray-50); border-radius: var(--radius-md); padding: 16px; text-align: center; }
+        .total-number { font-size: 32px; font-weight: 700; color: var(--color-primary); }
+        .total-label { font-size: 12px; color: var(--color-gray-500); }
+        .total-score { margin-top: 8px; font-size: 14px; color: var(--color-gray-600); }
+        .form-actions { display: flex; justify-content: space-between; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--color-gray-200); }
+        .btn { display: inline-flex; align-items: center; justify-content: center; height: 44px; padding: 0 24px; font-size: 14px; font-weight: 500; border: none; border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background-color: var(--color-primary); color: white; }
+        .btn-primary:hover { background-color: var(--color-primary-dark); }
+        .btn-secondary { background-color: var(--color-gray-100); color: var(--color-gray-700); }
+        .btn-secondary:hover { background-color: var(--color-gray-200); }
+        .toast { position: fixed; top: 20px; right: 20px; padding: 12px 20px; background: var(--color-gray-800); color: white; border-radius: var(--radius-md); font-size: 14px; z-index: 2000; opacity: 0; transform: translateY(-10px); transition: all 0.3s; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.error { background: var(--color-danger); }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo"><h1>技能评估系统</h1><p>管理端</p></div>
+            <nav class="sidebar-nav">
+                <div class="nav-section"><div class="nav-section-title">账号管理</div><div class="nav-item"><span>员工列表</span></div></div>
+                <div class="nav-section"><div class="nav-section-title">题库管理</div><div class="nav-item"><span>题目列表</span></div></div>
+                <div class="nav-section">
+                    <div class="nav-section-title">考核管理</div>
+                    <div class="nav-item active"><span>创建考核</span></div>
+                    <div class="nav-item"><span>考核监控</span></div>
+                    <div class="nav-item"><span>批阅管理</span></div>
+                    <div class="nav-item"><span>成绩发布</span></div></div>
+                </div>
+            </nav>
+            <div class="sidebar-footer"><div class="user-info"><div class="user-avatar">A</div><div class="user-details"><div class="user-name">管理员</div><div class="user-role">Admin</div></div></div></div>
+        </aside>
+
+        <main class="main">
+            <header class="page-header"><h1 class="page-title">创建考核</h1></header>
+            <div class="page-content">
+                <div class="step-bar">
+                    <div class="step-item"><div class="step-num done">✓</div><span class="step-label done">基本信息</span></div>
+                    <div class="step-line done"></div>
+                    <div class="step-item"><div class="step-num active">2</div><span class="step-label active">选择题目</span></div>
+                    <div class="step-line"></div>
+                    <div class="step-item"><div class="step-num pending">3</div><span class="step-label pending">发布设置</span></div>
+                </div>
+
+                <div class="content-layout">
+                    <div class="question-panel">
+                        <div class="panel-header">
+                            <span class="panel-title">题目列表</span>
+                            <span class="question-count">已选择 <strong id="selectedCount">0</strong> 题</span>
+                        </div>
+                        <div class="filter-bar">
+                            <select class="filter-select" id="filterDimension"><option value="">全部维度</option><option>系统管理</option><option>网络基础</option><option>故障处理</option><option>容器技术</option><option>数据库</option></select>
+                            <select class="filter-select" id="filterDifficulty"><option value="">全部难度</option><option value="easy">简单</option><option value="medium">中等</option><option value="hard">困难</option></select>
+                        </div>
+                        <div class="question-list" id="questionList"></div>
+                    </div>
+
+                    <div class="summary-panel">
+                        <div class="summary-header"><h3 class="summary-title">题目汇总</h3></div>
+                        <div class="summary-body">
+                            <div class="total-stat">
+                                <div class="total-number" id="totalQuestions">0</div>
+                                <div class="total-label">已选题目</div>
+                                <div class="total-score">总分：<strong id="totalScore">0</strong> 分</div>
+                            </div>
+                            <div class="summary-section">
+                                <div class="summary-section-title">各维度分布</div>
+                                <div id="dimensionStats"></div>
+                            </div>
+                        </div>
+                        <div class="form-actions" style="margin: 0 20px 20px;">
+                            <button class="btn btn-secondary" onclick="handlePrev()">上一步</button>
+                            <button class="btn btn-primary" onclick="handleNext()">下一步</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="toast" id="toast"></div>
+    <script src="../shared/js/utils.js"></script>
+    <script>
+        let selectedQuestions = new Set();
+        let examData = JSON.parse(sessionStorage.getItem('examDraft') || '{}');
+
+        function showToast(message, type = 'error') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast show`;
+            if (type === 'error') toast.style.background = 'var(--color-danger)';
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function renderQuestions() {
+            const list = document.getElementById('questionList');
+            const dimension = document.getElementById('filterDimension').value;
+            const difficulty = document.getElementById('filterDifficulty').value;
+
+            let filtered = MockData.questions.filter(q => {
+                if (q.status !== 'active') return false;
+                if (dimension && q.dimension !== dimension) return false;
+                if (difficulty && q.difficulty !== difficulty) return false;
+                return true;
+            });
+
+            list.innerHTML = filtered.map(q => {
+                const diff = q.difficulty === 'easy' ? 'diff-easy' : q.difficulty === 'medium' ? 'diff-medium' : 'diff-hard';
+                const diffText = q.difficulty === 'easy' ? '简单' : q.difficulty === 'medium' ? '中等' : '困难';
+                const checked = selectedQuestions.has(q.id) ? 'checked' : '';
+                const selected = selectedQuestions.has(q.id) ? 'selected' : '';
+                return `<div class="question-item ${selected}" onclick="toggleQuestion('${q.id}', this)">
+                    <input type="checkbox" class="question-checkbox" ${checked} onclick="event.stopPropagation()">
+                    <div class="question-content">
+                        <div class="question-text">${q.content}</div>
+                        <div class="question-meta">
+                            <span>${q.dimension}</span>
+                            <span class="difficulty-tag ${diff}">${diffText}</span>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function toggleQuestion(id, el) {
+            if (selectedQuestions.has(id)) {
+                selectedQuestions.delete(id);
+                el.classList.remove('selected');
+                el.querySelector('input').checked = false;
+            } else {
+                selectedQuestions.add(id);
+                el.classList.add('selected');
+                el.querySelector('input').checked = true;
+            }
+            updateSummary();
+        }
+
+        function updateSummary() {
+            document.getElementById('selectedCount').textContent = selectedQuestions.size;
+            document.getElementById('totalQuestions').textContent = selectedQuestions.size;
+
+            const dimensionStats = {};
+            let totalScore = 0;
+            selectedQuestions.forEach(id => {
+                const q = MockData.questions.find(q => q.id === id);
+                if (q) {
+                    dimensionStats[q.dimension] = (dimensionStats[q.dimension] || 0) + 1;
+                    totalScore += q.difficulty === 'hard' ? 20 : q.difficulty === 'medium' ? 10 : 5;
+                }
+            });
+
+            document.getElementById('totalScore').textContent = totalScore;
+            const statsEl = document.getElementById('dimensionStats');
+            statsEl.innerHTML = Object.entries(dimensionStats).map(([name, count]) =>
+                `<div class="dimension-stat"><span class="dimension-name">${name}</span><span class="dimension-count">${count}题</span></div>`
+            ).join('');
+        }
+
+        function handlePrev() { window.location.href = 'exam-create-step1.html'; }
+
+        function handleNext() {
+            if (selectedQuestions.size === 0) { showToast('请至少选择一道题目'); return; }
+            examData.selectedQuestions = Array.from(selectedQuestions);
+            sessionStorage.setItem('examDraft', JSON.stringify(examData));
+            window.location.href = 'exam-create-step3.html';
+        }
+
+        ['filterDimension', 'filterDifficulty'].forEach(id => {
+            document.getElementById(id).addEventListener('change', renderQuestions);
+        });
+
+        if (examData.selectedQuestions) {
+            selectedQuestions = new Set(examData.selectedQuestions);
+        }
+        renderQuestions();
+        updateSummary();
+    </script>
+</body>
+</html>

@@ -14,7 +14,7 @@
       "phase": "阶段0",
       "name": "原型确认",
       "description": "完成所有功能静态HTML Demo页面，确认UI/UX方案",
-      "status": "in_progress",
+      "status": "completed",
       "deliverables": [
         "admin/login.html",
         "admin/employee-list.html",

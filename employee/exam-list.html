@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>考核列表 - Dmall Helpdesk 技能评估系统</title>
+    <link rel="stylesheet" href="../shared/css/theme.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', -apple-system, sans-serif; background: #f3f4f6; }
+        .app { max-width: 430px; margin: 0 auto; min-height: 100vh; background: #f3f4f6; padding-bottom: 80px; }
+        .header { background: white; padding: 16px; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; gap: 12px; }
+        .back-btn { width: 32px; height: 32px; border: none; background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .header-title { font-size: 17px; font-weight: 600; flex: 1; text-align: center; margin-right: 44px; }
+        .tabs { background: white; display: flex; padding: 0 16px; border-bottom: 1px solid #e5e7eb; }
+        .tab { flex: 1; padding: 14px; text-align: center; font-size: 14px; font-weight: 500; color: #6b7280; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
+        .tab.active { color: #667eea; border-bottom-color: #667eea; }
+        .content { padding: 16px; }
+        .exam-card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .exam-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .exam-name { font-size: 15px; font-weight: 600; color: #1f2937; }
+        .exam-status { font-size: 12px; padding: 2px 8px; border-radius: 4px; }
+        .exam-status.ongoing { background: #dbeafe; color: #1e40af; }
+        .exam-status.done { background: #d1fae5; color: #065f46; }
+        .exam-status.expired { background: #fee2e2; color: #991b1b; }
+        .exam-meta { display: flex; gap: 16px; font-size: 13px; color: #6b7280; margin-bottom: 14px; }
+        .exam-meta span { display: flex; align-items: center; gap: 4px; }
+        .progress-bar { height: 4px; background: #e5e7eb; border-radius: 2px; margin-bottom: 12px; overflow: hidden; }
+        .progress-fill { height: 100%; background: #667eea; border-radius: 2px; }
+        .exam-footer { display: flex; justify-content: space-between; align-items: center; }
+        .exam-score { font-size: 14px; color: #6b7280; }
+        .exam-score strong { color: #667eea; font-size: 18px; font-weight: 600; }
+        .exam-btn { padding: 8px 18px; background: #667eea; color: white; border: none; border-radius: 6px; font-size: 13px; cursor: pointer; }
+        .exam-btn.secondary { background: #f3f4f6; color: #6b7280; }
+        .empty-state { text-align: center; padding: 60px 20px; color: #9ca3af; }
+        .empty-icon { width: 64px; height: 64px; margin: 0 auto 16px; background: #f3f4f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #d1d5db; }
+        .tab-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 430px; background: white; border-top: 1px solid #e5e7eb; display: flex; padding: 8px 0; padding-bottom: env(safe-area-inset-bottom, 8px); }
+        .tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; color: #9ca3af; font-size: 10px; }
+        .tab-item.active { color: #667eea; }
+        .tab-item svg { width: 22px; height: 22px; }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <div class="header">
+            <button class="back-btn" onclick="history.back()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+            <div class="header-title">考核列表</div>
+        </div>
+        <div class="tabs">
+            <div class="tab active" data-tab="ongoing" onclick="switchTab(this)">进行中</div>
+            <div class="tab" data-tab="done" onclick="switchTab(this)">已完成</div>
+        </div>
+        <div class="content" id="content"></div>
+
+        <div class="tab-bar">
+            <div class="tab-item" onclick="location.href='index.html'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg><span>首页</span></div>
+            <div class="tab-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg><span>考核</span></div>
+            <div class="tab-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path></svg><span>学习</span></div>
+            <div class="tab-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg><span>我的</span></div>
+        </div>
+    </div>
+    <script src="../shared/js/utils.js"></script>
+    <script>
+        const ongoingExams = [
+            { id: 'EX001', name: '网络知识月度考核', status: 'ongoing', deadline: '2026-04-25', duration: 30, questionCount: 10, progress: 0 },
+            { id: 'EX002', name: '系统安全意识测试', status: 'ongoing', deadline: '2026-04-28', duration: 20, questionCount: 8, progress: 0 },
+        ];
+        const doneExams = [
+            { id: 'EX003', name: 'Linux 基础考核', status: 'done', deadline: '2026-04-20', duration: 30, questionCount: 15, score: 85, progress: 100 },
+        ];
+
+        function switchTab(el) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            renderContent(el.dataset.tab);
+        }
+
+        function renderContent(tab) {
+            const exams = tab === 'ongoing' ? ongoingExams : doneExams;
+            const content = document.getElementById('content');
+            if (exams.length === 0) {
+                content.innerHTML = '<div class="empty-state"><div class="empty-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg></div><p>暂无考核</p></div>';
+                return;
+            }
+            content.innerHTML = exams.map(exam => `
+                <div class="exam-card">
+                    <div class="exam-header">
+                        <div class="exam-name">${exam.name}</div>
+                        <span class="exam-status ${exam.status}">${exam.status === 'ongoing' ? '进行中' : exam.status === 'done' ? '已完成' : '已过期'}</span>
+                    </div>
+                    <div class="exam-meta">
+                        <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>${exam.duration}分钟</span>
+                        <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg>${exam.questionCount}题</span>
+                        <span>截止 ${exam.deadline}</span>
+                    </div>
+                    ${exam.status === 'done' ? `<div class="progress-bar"><div class="progress-fill" style="width: 100%"></div></div>` : ''}
+                    <div class="exam-footer">
+                        ${exam.status === 'done' ? `<div class="exam-score">得分 <strong>${exam.score}</strong> 分</div>` : '<div></div>'}
+                        <button class="exam-btn ${exam.status === 'done' ? 'secondary' : ''}" onclick="location.href='${exam.status === 'ongoing' ? 'exam-detail.html' : 'exam-result.html'}'">${exam.status === 'ongoing' ? '立即作答' : '查看详情'}</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        renderContent('ongoing');
+    </script>
+</body>
+</html>

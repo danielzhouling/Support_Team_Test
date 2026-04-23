@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>题库管理 - Dmall Helpdesk 技能评估系统</title>
+    <link rel="stylesheet" href="../shared/css/theme.css">
+    <style>
+        :root { --sidebar-width: 240px; }
+        .layout { display: flex; min-height: 100vh; }
+        .sidebar { width: var(--sidebar-width); background: var(--bg-sidebar); color: white; position: fixed; height: 100vh; display: flex; flex-direction: column; }
+        .sidebar-logo { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-logo h1 { font-size: 16px; font-weight: 600; }
+        .sidebar-logo p { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 4px; }
+        .sidebar-nav { flex: 1; padding: 16px 0; overflow-y: auto; }
+        .nav-section { margin-bottom: 24px; }
+        .nav-section-title { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.4); text-transform: uppercase; padding: 0 20px; margin-bottom: 8px; }
+        .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; font-size: 14px; color: rgba(255,255,255,0.7); cursor: pointer; transition: all 0.2s; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
+        .nav-item.active { background: rgba(79, 70, 229, 0.3); color: white; border-right: 3px solid var(--color-primary); }
+        .sidebar-footer { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; }
+        .user-details { flex: 1; }
+        .user-name { font-size: 14px; font-weight: 500; }
+        .user-role { font-size: 12px; color: rgba(255,255,255,0.5); }
+        .logout-btn { background: none; border: none; color: rgba(255,255,255,0.5); cursor: pointer; padding: 4px; }
+        .logout-btn:hover { color: white; }
+        .main { flex: 1; margin-left: var(--sidebar-width); display: flex; flex-direction: column; }
+        .page-header { background: white; border-bottom: 1px solid var(--color-gray-200); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
+        .page-title { font-size: 18px; font-weight: 600; color: var(--color-gray-900); }
+        .header-actions { display: flex; gap: 8px; }
+        .page-content { flex: 1; padding: 24px; }
+        .filter-bar { background: white; border-radius: var(--radius-lg); padding: 16px 20px; margin-bottom: 16px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+        .filter-group { display: flex; align-items: center; gap: 8px; }
+        .filter-label { font-size: 14px; color: var(--color-gray-600); }
+        .filter-select { height: 36px; padding: 0 12px; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md); font-size: 14px; background: white; cursor: pointer; min-width: 120px; }
+        .filter-select:focus { outline: none; border-color: var(--color-primary); }
+        .search-box { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+        .search-input { height: 36px; width: 240px; padding: 0 12px; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md); font-size: 14px; }
+        .search-input:focus { outline: none; border-color: var(--color-primary); }
+        .search-btn { height: 36px; width: 36px; border: none; background: var(--color-primary); color: white; border-radius: var(--radius-md); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .search-btn:hover { background: var(--color-primary-dark); }
+        /* 统计卡片 */
+        .stats-bar { display: flex; gap: 16px; margin-bottom: 16px; }
+        .stat-card { flex: 1; background: white; border-radius: var(--radius-lg); padding: 16px 20px; display: flex; align-items: center; gap: 12px; }
+        .stat-icon { width: 40px; height: 40px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; }
+        .stat-icon.blue { background: rgba(59, 130, 246, 0.1); color: #3B82F6; }
+        .stat-icon.green { background: rgba(16, 185, 129, 0.1); color: #10B981; }
+        .stat-icon.orange { background: rgba(245, 158, 11, 0.1); color: #F59E0B; }
+        .stat-icon.red { background: rgba(239, 68, 68, 0.1); color: #EF4444; }
+        .stat-info { flex: 1; }
+        .stat-value { font-size: 24px; font-weight: 600; color: var(--color-gray-900); }
+        .stat-label { font-size: 12px; color: var(--color-gray-500); }
+        .data-table { background: white; border-radius: var(--radius-lg); overflow: hidden; }
+        .table { width: 100%; border-collapse: collapse; }
+        .table th { background: var(--color-gray-50); padding: 12px 16px; text-align: left; font-size: 12px; font-weight: 600; color: var(--color-gray-500); text-transform: uppercase; border-bottom: 1px solid var(--color-gray-200); }
+        .table td { padding: 14px 16px; border-bottom: 1px solid var(--color-gray-100); font-size: 14px; color: var(--color-gray-700); }
+        .table tbody tr:hover { background: var(--color-gray-50); }
+        .table tbody tr:last-child td { border-bottom: none; }
+        .question-content { max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .status-tag { display: inline-flex; align-items: center; height: 24px; padding: 0 8px; font-size: 12px; font-weight: 500; border-radius: var(--radius-sm); }
+        .status-active { background: #D1FAE5; color: #065F46; }
+        .status-pending { background: #FEF3C7; color: #92400E; }
+        .status-inactive { background: var(--color-gray-200); color: var(--color-gray-500); }
+        .difficulty-tag { display: inline-flex; align-items: center; height: 24px; padding: 0 8px; font-size: 12px; font-weight: 500; border-radius: var(--radius-sm); }
+        .diff-easy { background: #D1FAE5; color: #065F46; }
+        .diff-medium { background: #DBEAFE; color: #1E40AF; }
+        .diff-hard { background: #FEE2E2; color: #991B1B; }
+        .action-btns { display: flex; gap: 4px; }
+        .action-btn { padding: 6px 10px; font-size: 12px; border: none; border-radius: var(--radius-sm); cursor: pointer; background: var(--color-gray-100); color: var(--color-gray-700); transition: all 0.2s; }
+        .action-btn:hover { background: var(--color-gray-200); }
+        .action-btn.primary { background: rgba(79, 70, 229, 0.1); color: var(--color-primary); }
+        .action-btn.primary:hover { background: rgba(79, 70, 229, 0.2); }
+        .action-btn.success { background: rgba(16, 185, 129, 0.1); color: #10B981; }
+        .action-btn.success:hover { background: rgba(16, 185, 129, 0.2); }
+        .pagination-bar { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background: white; border-top: 1px solid var(--color-gray-200); }
+        .pagination-info { font-size: 14px; color: var(--color-gray-500); }
+        .pagination { display: flex; align-items: center; gap: 4px; }
+        .pagination button { min-width: 32px; height: 32px; border: 1px solid var(--color-gray-300); background: white; border-radius: var(--radius-sm); cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+        .pagination button:hover:not(:disabled) { background: var(--color-gray-100); }
+        .pagination button.active { background: var(--color-primary); color: white; border-color: var(--color-primary); }
+        .pagination button:disabled { opacity: 0.5; cursor: not-allowed; }
+        /* 弹窗 */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.2s; }
+        .modal-overlay.show { opacity: 1; visibility: visible; }
+        .modal { background: white; border-radius: var(--radius-lg); width: 100%; max-width: 600px; max-height: 90vh; overflow: hidden; transform: scale(0.95); transition: transform 0.2s; }
+        .modal-overlay.show .modal { transform: scale(1); }
+        .modal-header { padding: 16px 20px; border-bottom: 1px solid var(--color-gray-200); display: flex; align-items: center; justify-content: space-between; }
+        .modal-header h3 { font-size: 16px; font-weight: 600; }
+        .modal-close { width: 32px; height: 32px; border: none; background: none; cursor: pointer; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: var(--color-gray-500); }
+        .modal-close:hover { background: var(--color-gray-100); }
+        .modal-body { padding: 20px; overflow-y: auto; max-height: calc(90vh - 130px); }
+        .modal-footer { padding: 16px 20px; border-top: 1px solid var(--color-gray-200); display: flex; justify-content: flex-end; gap: 8px; }
+        .form-group { margin-bottom: 16px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .form-label { display: block; font-size: 14px; font-weight: 500; color: var(--color-gray-700); margin-bottom: 6px; }
+        .form-label .required { color: var(--color-danger); }
+        .form-input, .form-select, .form-textarea { width: 100%; padding: 0 12px; font-size: 14px; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md); background: white; }
+        .form-input { height: 40px; }
+        .form-select { height: 40px; }
+        .form-textarea { height: 100px; padding: 10px 12px; resize: vertical; }
+        .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+        .confirm-modal .modal { max-width: 400px; }
+        .confirm-content { text-align: center; padding: 20px; }
+        .confirm-icon { width: 48px; height: 48px; border-radius: 50%; background: #FEE2E2; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; color: var(--color-danger); }
+        .confirm-icon.warning { background: #FEF3C7; color: #F59E0B; }
+        .confirm-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+        .confirm-message { font-size: 14px; color: var(--color-gray-500); }
+        .confirm-actions { display: flex; gap: 8px; justify-content: center; margin-top: 20px; }
+        .toast { position: fixed; top: 20px; right: 20px; padding: 12px 20px; background: var(--color-gray-800); color: white; border-radius: var(--radius-md); font-size: 14px; z-index: 2000; opacity: 0; transform: translateY(-10px); transition: all 0.3s; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.success { background: var(--color-success); }
+        .toast.error { background: var(--color-danger); }
+        .btn { display: inline-flex; align-items: center; justify-content: center; height: 40px; padding: 0 20px; font-size: 14px; font-weight: 500; border: none; border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s; text-decoration: none; }
+        .btn-primary { background-color: var(--color-primary); color: white; }
+        .btn-primary:hover { background-color: var(--color-primary-dark); }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <h1>技能评估系统</h1>
+                <p>管理端</p>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">账号管理</div>
+                    <div class="nav-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        <span>员工列表</span>
+                    </div>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">题库管理</div>
+                    <div class="nav-item active">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                        <span>题目列表</span>
+                    </div>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">考核管理</div>
+                    <div class="nav-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+                        <span>创建考核</span>
+                    </div>
+                    <div class="nav-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                        <span>考核监控</span>
+                    </div>
+                    <div class="nav-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        <span>批阅管理</span>
+                    </div>
+                    <div class="nav-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                        <span>成绩发布</span>
+                    </div>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">数据报表</div>
+                    <div class="nav-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                        <span>数据看板</span>
+                    </div>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar">A</div>
+                    <div class="user-details">
+                        <div class="user-name">管理员</div>
+                        <div class="user-role">Admin</div>
+                    </div>
+                    <button class="logout-btn" onclick="handleLogout()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main">
+            <header class="page-header">
+                <h1 class="page-title">题库管理</h1>
+                <div class="header-actions">
+                    <button class="btn" style="background: var(--color-gray-100); color: var(--color-gray-700);">导出Excel</button>
+                    <button class="btn" style="background: var(--color-gray-100); color: var(--color-gray-700);">批量导入</button>
+                    <button class="btn btn-primary" onclick="openAddModal()">+ 新建题目</button>
+                </div>
+            </header>
+
+            <div class="page-content">
+                <!-- 统计卡片 -->
+                <div class="stats-bar">
+                    <div class="stat-card">
+                        <div class="stat-icon blue">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="statTotal">0</div>
+                            <div class="stat-label">题目总数</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="statActive">0</div>
+                            <div class="stat-label">已启用</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon orange">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="statPending">0</div>
+                            <div class="stat-label">待审核</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon red">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path></svg>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="statDisabled">0</div>
+                            <div class="stat-label">已禁用</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 筛选区 -->
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <span class="filter-label">维度</span>
+                        <select class="filter-select" id="filterDimension">
+                            <option value="">全部</option>
+                            <option value="系统管理">系统管理</option>
+                            <option value="网络基础">网络基础</option>
+                            <option value="故障处理">故障处理</option>
+                            <option value="容器技术">容器技术</option>
+                            <option value="数据库">数据库</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">难度</span>
+                        <select class="filter-select" id="filterDifficulty">
+                            <option value="">全部</option>
+                            <option value="easy">简单</option>
+                            <option value="medium">中等</option>
+                            <option value="hard">困难</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">状态</span>
+                        <select class="filter-select" id="filterStatus">
+                            <option value="">全部</option>
+                            <option value="active">已启用</option>
+                            <option value="pending">待审核</option>
+                            <option value="inactive">已禁用</option>
+                        </select>
+                    </div>
+                    <div class="search-box">
+                        <input type="text" class="search-input" id="searchKeyword" placeholder="搜索题号/题目内容...">
+                        <button class="search-btn" onclick="handleSearch()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 数据表格 -->
+                <div class="data-table">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>题号</th>
+                                <th>题目内容</th>
+                                <th>维度</th>
+                                <th>难度</th>
+                                <th>状态</th>
+                                <th>来源</th>
+                                <th>创建时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="questionTableBody"></tbody>
+                    </table>
+                </div>
+
+                <!-- 分页 -->
+                <div class="pagination-bar">
+                    <div class="pagination-info">共 <span id="totalCount">0</span> 条记录</div>
+                    <div class="pagination" id="pagination"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 新增/编辑题目弹窗 -->
+    <div class="modal-overlay" id="questionModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modalTitle">新建题目</h3>
+                <button class="modal-close" onclick="closeModal()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="questionForm">
+                    <input type="hidden" id="questionId">
+                    <div class="form-group">
+                        <label class="form-label">题目内容 <span class="required">*</span></label>
+                        <textarea class="form-textarea" id="formContent" placeholder="请输入题目内容" required></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">维度 <span class="required">*</span></label>
+                            <select class="form-select" id="formDimension" required>
+                                <option value="">请选择维度</option>
+                                <option value="系统管理">系统管理</option>
+                                <option value="网络基础">网络基础</option>
+                                <option value="故障处理">故障处理</option>
+                                <option value="容器技术">容器技术</option>
+                                <option value="数据库">数据库</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">难度 <span class="required">*</span></label>
+                            <select class="form-select" id="formDifficulty" required>
+                                <option value="">请选择难度</option>
+                                <option value="easy">简单</option>
+                                <option value="medium">中等</option>
+                                <option value="hard">困难</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">题目类型</label>
+                            <select class="form-select" id="formType">
+                                <option value="single">单选题</option>
+                                <option value="multiple">多选题</option>
+                                <option value="judge">判断题</option>
+                                <option value="essay">问答题</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">状态</label>
+                            <select class="form-select" id="formStatus">
+                                <option value="active">已启用</option>
+                                <option value="pending">待审核</option>
+                                <option value="inactive">已禁用</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">来源</label>
+                        <select class="form-select" id="formSource">
+                            <option value="人工录入">人工录入</option>
+                            <option value="AI生成">AI生成</option>
+                            <option value="题库导入">题库导入</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" style="background: var(--color-gray-100); color: var(--color-gray-700);" onclick="closeModal()">取消</button>
+                <button class="btn btn-primary" onclick="handleSave()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 确认弹窗 -->
+    <div class="modal-overlay confirm-modal" id="confirmModal">
+        <div class="modal">
+            <div class="confirm-content">
+                <div class="confirm-icon" id="confirmIcon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                </div>
+                <div class="confirm-title" id="confirmTitle">确认操作</div>
+                <div class="confirm-message" id="confirmMessage">确定要执行此操作吗？</div>
+                <div class="confirm-actions">
+                    <button class="btn" style="background: var(--color-gray-100); color: var(--color-gray-700);" onclick="closeConfirmModal()">取消</button>
+                    <button class="btn" id="confirmBtn" style="background: var(--color-danger); color: white;">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="../shared/js/utils.js"></script>
+    <script>
+        const DIFFICULTY_MAP = { easy: { text: '简单', class: 'diff-easy' }, medium: { text: '中等', class: 'diff-medium' }, hard: { text: '困难', class: 'diff-hard' } };
+        const STATUS_MAP = { active: { text: '已启用', class: 'status-active' }, pending: { text: '待审核', class: 'status-pending' }, inactive: { text: '已禁用', class: 'status-inactive' } };
+
+        let pagination = { page: 1, pageSize: 10, total: 0, totalPages: 0 };
+        let currentEditQuestion = null;
+        let pendingAction = null;
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function updateStats() {
+            const total = MockData.questions.length;
+            const active = MockData.questions.filter(q => q.status === 'active').length;
+            const pending = MockData.questions.filter(q => q.status === 'pending').length;
+            const inactive = MockData.questions.filter(q => q.status === 'inactive').length;
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statActive').textContent = active;
+            document.getElementById('statPending').textContent = pending;
+            document.getElementById('statDisabled').textContent = inactive;
+        }
+
+        function renderTable(questions) {
+            const tbody = document.getElementById('questionTableBody');
+            if (!questions || questions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: var(--color-gray-400);">暂无数据</td></tr>';
+                return;
+            }
+            tbody.innerHTML = questions.map(q => {
+                const diff = DIFFICULTY_MAP[q.difficulty] || DIFFICULTY_MAP.easy;
+                const status = STATUS_MAP[q.status] || STATUS_MAP.inactive;
+                return `<tr>
+                    <td style="font-family: monospace; color: var(--color-gray-500);">${q.id}</td>
+                    <td class="question-content" title="${q.content}">${q.content}</td>
+                    <td>${q.dimension}</td>
+                    <td><span class="difficulty-tag ${diff.class}">${diff.text}</span></td>
+                    <td><span class="status-tag ${status.class}">${status.text}</span></td>
+                    <td>${q.source}</td>
+                    <td>${q.createdAt}</td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="action-btn primary" onclick="handleEdit('${q.id}')">编辑</button>
+                            <button class="action-btn" onclick="handleAudit('${q.id}')">审核</button>
+                            <button class="action-btn ${q.status === 'active' ? '' : 'success'}" onclick="handleToggleStatus('${q.id}')">${q.status === 'active' ? '禁用' : '启用'}</button>
+                        </div>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function renderPagination() {
+            const container = document.getElementById('pagination');
+            const { page, totalPages } = pagination;
+            if (totalPages <= 1) { container.innerHTML = ''; return; }
+            let html = `<button ${page <= 1 ? 'disabled' : ''} onclick="goToPage(${page - 1})"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg></button>`;
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= page - 2 && i <= page + 2)) {
+                    html += `<button class="${i === page ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+                } else if (i === page - 3 || i === page + 3) {
+                    html += `<span style="padding: 0 8px;">...</span>`;
+                }
+            }
+            html += `<button ${page >= totalPages ? 'disabled' : ''} onclick="goToPage(${page + 1})"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg></button>`;
+            container.innerHTML = html;
+        }
+
+        function loadData() {
+            const dimension = document.getElementById('filterDimension').value;
+            const difficulty = document.getElementById('filterDifficulty').value;
+            const status = document.getElementById('filterStatus').value;
+            const keyword = document.getElementById('searchKeyword').value.toLowerCase();
+
+            let filtered = MockData.questions.filter(q => {
+                if (dimension && q.dimension !== dimension) return false;
+                if (difficulty && q.difficulty !== difficulty) return false;
+                if (status && q.status !== status) return false;
+                if (keyword && !q.id.toLowerCase().includes(keyword) && !q.content.toLowerCase().includes(keyword)) return false;
+                return true;
+            });
+
+            pagination.total = filtered.length;
+            pagination.totalPages = Math.ceil(filtered.length / pagination.pageSize);
+            const start = (pagination.page - 1) * pagination.pageSize;
+            renderTable(filtered.slice(start, start + pagination.pageSize));
+            renderPagination();
+            document.getElementById('totalCount').textContent = pagination.total;
+            updateStats();
+        }
+
+        function handleSearch() { pagination.page = 1; loadData(); }
+        function goToPage(page) { if (page < 1 || page > pagination.totalPages) return; pagination.page = page; loadData(); }
+
+        function openAddModal() {
+            currentEditQuestion = null;
+            document.getElementById('modalTitle').textContent = '新建题目';
+            document.getElementById('questionForm').reset();
+            document.getElementById('questionId').value = '';
+            document.getElementById('questionModal').classList.add('show');
+        }
+
+        function handleEdit(id) {
+            const q = MockData.questions.find(q => q.id === id);
+            if (!q) return;
+            currentEditQuestion = q;
+            document.getElementById('modalTitle').textContent = '编辑题目';
+            document.getElementById('questionId').value = id;
+            document.getElementById('formContent').value = q.content;
+            document.getElementById('formDimension').value = q.dimension;
+            document.getElementById('formDifficulty').value = q.difficulty;
+            document.getElementById('formStatus').value = q.status;
+            document.getElementById('formSource').value = q.source;
+            document.getElementById('questionModal').classList.add('show');
+        }
+
+        function handleAudit(id) {
+            const q = MockData.questions.find(q => q.id === id);
+            if (!q) return;
+            if (q.status !== 'pending') { showToast('只有待审核的题目才能审核', 'error'); return; }
+            document.getElementById('confirmTitle').textContent = '审核题目';
+            document.getElementById('confirmMessage').textContent = `确定要审核题目 "${q.content.substring(0, 20)}..." 吗？`;
+            document.getElementById('confirmIcon').className = 'confirm-icon warning';
+            document.getElementById('confirmBtn').style.background = 'var(--color-success)';
+            pendingAction = { type: 'audit', id };
+            document.getElementById('confirmModal').classList.add('show');
+        }
+
+        function handleToggleStatus(id) {
+            const q = MockData.questions.find(q => q.id === id);
+            if (!q) return;
+            const action = q.status === 'active' ? '禁用' : '启用';
+            document.getElementById('confirmTitle').textContent = `${action}题目`;
+            document.getElementById('confirmMessage').textContent = `确定要${action}此题目吗？`;
+            document.getElementById('confirmIcon').className = 'confirm-icon';
+            document.getElementById('confirmBtn').style.background = q.status === 'active' ? 'var(--color-danger)' : 'var(--color-primary)';
+            pendingAction = { type: 'toggleStatus', id };
+            document.getElementById('confirmModal').classList.add('show');
+        }
+
+        function closeModal() { document.getElementById('questionModal').classList.remove('show'); }
+        function closeConfirmModal() { document.getElementById('confirmModal').classList.remove('show'); pendingAction = null; }
+
+        document.getElementById('confirmBtn').addEventListener('click', () => {
+            if (!pendingAction) return;
+            if (pendingAction.type === 'audit') {
+                const q = MockData.questions.find(q => q.id === pendingAction.id);
+                if (q) { q.status = 'active'; showToast('审核通过'); }
+            } else if (pendingAction.type === 'toggleStatus') {
+                const q = MockData.questions.find(q => q.id === pendingAction.id);
+                if (q) { q.status = q.status === 'active' ? 'inactive' : 'active'; showToast('操作成功'); }
+            }
+            closeConfirmModal();
+            loadData();
+        });
+
+        function handleSave() {
+            const content = document.getElementById('formContent').value.trim();
+            const dimension = document.getElementById('formDimension').value;
+            const difficulty = document.getElementById('formDifficulty').value;
+            const status = document.getElementById('formStatus').value;
+            const source = document.getElementById('formSource').value;
+
+            if (!content || !dimension || !difficulty) { showToast('请填写必填项', 'error'); return; }
+
+            if (currentEditQuestion) {
+                const idx = MockData.questions.findIndex(q => q.id === currentEditQuestion.id);
+                if (idx !== -1) { MockData.questions[idx] = { ...MockData.questions[idx], content, dimension, difficulty, status, source }; }
+                showToast('保存成功');
+            } else {
+                const newId = 'Q' + String(MockData.questions.length + 1).padStart(3, '0');
+                MockData.questions.push({ id: newId, content, dimension, difficulty, status, source, createdAt: new Date().toISOString().split('T')[0] });
+                showToast('新建成功');
+            }
+            closeModal();
+            loadData();
+        }
+
+        function handleLogout() { window.location.href = 'login.html'; }
+
+        ['filterDimension', 'filterDifficulty', 'filterStatus'].forEach(id => {
+            document.getElementById(id).addEventListener('change', () => { pagination.page = 1; loadData(); });
+        });
+        document.getElementById('searchKeyword').addEventListener('keypress', e => { if (e.key === 'Enter') handleSearch(); });
+        document.getElementById('questionModal').addEventListener('click', e => { if (e.target === document.getElementById('questionModal')) closeModal(); });
+        document.getElementById('confirmModal').addEventListener('click', e => { if (e.target === document.getElementById('confirmModal')) closeConfirmModal(); });
+
+        loadData();
+    </script>
+</body>
+</html>

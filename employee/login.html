@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>员工登录 - Dmall Helpdesk 技能评估系统</title>
+    <link rel="stylesheet" href="../shared/css/theme.css">
+    <style>
+        .login-layout { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .login-card { background: white; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); padding: 48px; width: 100%; max-width: 380px; }
+        .login-logo { text-align: center; margin-bottom: 32px; }
+        .login-logo h1 { font-size: 22px; font-weight: 600; color: #1f2937; margin-top: 12px; }
+        .login-logo p { font-size: 13px; color: #6b7280; margin-top: 4px; }
+        .form-group { margin-bottom: 18px; }
+        .form-label { display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 6px; }
+        .form-input { width: 100%; height: 44px; padding: 0 14px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 8px; outline: none; transition: all 0.2s; }
+        .form-input:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+        .form-checkbox { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
+        .form-checkbox input { width: 16px; height: 16px; accent-color: #667eea; }
+        .form-checkbox span { font-size: 13px; color: #6b7280; }
+        .btn { width: 100%; height: 44px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 500; cursor: pointer; transition: opacity 0.2s; }
+        .btn:hover { opacity: 0.9; }
+        .error-alert { background: #fee2e2; border: 1px solid #fecaca; color: #991b1b; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; display: none; }
+        .error-alert.show { display: block; }
+        .demo-hint { margin-top: 24px; padding: 14px; background: #f9fafb; border-radius: 8px; font-size: 12px; color: #6b7280; text-align: center; }
+        .demo-hint strong { color: #374151; }
+    </style>
+</head>
+<body>
+    <div class="login-layout">
+        <div class="login-card">
+            <div class="login-logo">
+                <svg width="44" height="44" viewBox="0 0 48 48" fill="none"><rect width="48" height="48" rx="12" fill="#667eea"/><path d="M14 24L20 30L34 16" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <h1>技能评估系统</h1>
+                <p>员工端</p>
+            </div>
+            <div id="errorMessage" class="error-alert"></div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="form-label">工号</label>
+                    <input type="text" id="employeeId" class="form-input" placeholder="请输入工号" autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">密码</label>
+                    <input type="password" id="password" class="form-input" placeholder="请输入密码" autocomplete="current-password">
+                </div>
+                <div class="form-checkbox">
+                    <input type="checkbox" id="remember"><span>记住登录状态</span>
+                </div>
+                <button type="submit" class="btn">登录</button>
+            </form>
+            <div class="demo-hint">
+                <strong>演示账号：</strong>工号 <strong>E001</strong>，密码 <strong>emp123</strong>
+            </div>
+        </div>
+    </div>
+    <script src="../shared/js/utils.js"></script>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('employeeId').value.trim();
+            const pw = document.getElementById('password').value;
+            document.getElementById('errorMessage').classList.remove('show');
+            const user = MockData.employees.find(u => u.id === id && u.status === 'active');
+            if (!user || pw !== 'emp123') {
+                document.getElementById('errorMessage').textContent = '工号或密码错误';
+                document.getElementById('errorMessage').classList.add('show');
+                return;
+            }
+            sessionStorage.setItem('currentUser', JSON.stringify({ ...user, role: 'employee' }));
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>

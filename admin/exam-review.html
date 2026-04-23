@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>批阅管理 - Dmall Helpdesk 技能评估系统</title>
+    <link rel="stylesheet" href="../shared/css/theme.css">
+    <style>
+        :root { --sidebar-width: 240px; }
+        .layout { display: flex; min-height: 100vh; }
+        .sidebar { width: var(--sidebar-width); background: var(--bg-sidebar); color: white; position: fixed; height: 100vh; display: flex; flex-direction: column; }
+        .sidebar-logo { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-logo h1 { font-size: 16px; font-weight: 600; }
+        .sidebar-logo p { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 4px; }
+        .sidebar-nav { flex: 1; padding: 16px 0; overflow-y: auto; }
+        .nav-section { margin-bottom: 24px; }
+        .nav-section-title { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.4); text-transform: uppercase; padding: 0 20px; margin-bottom: 8px; }
+        .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; font-size: 14px; color: rgba(255,255,255,0.7); cursor: pointer; transition: all 0.2s; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
+        .nav-item.active { background: rgba(79, 70, 229, 0.3); color: white; border-right: 3px solid var(--color-primary); }
+        .sidebar-footer { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; }
+        .user-details { flex: 1; }
+        .user-name { font-size: 14px; font-weight: 500; }
+        .user-role { font-size: 12px; color: rgba(255,255,255,0.5); }
+        .main { flex: 1; margin-left: var(--sidebar-width); display: flex; flex-direction: column; }
+        .page-header { background: white; border-bottom: 1px solid var(--color-gray-200); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
+        .page-title { font-size: 18px; font-weight: 600; color: var(--color-gray-900); }
+        .page-content { flex: 1; padding: 24px; }
+        .filter-bar { background: white; border-radius: var(--radius-lg); padding: 16px 20px; margin-bottom: 16px; display: flex; gap: 12px; align-items: center; }
+        .filter-select { height: 36px; padding: 0 12px; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md); font-size: 14px; background: white; }
+        .data-table { background: white; border-radius: var(--radius-lg); overflow: hidden; }
+        .table { width: 100%; border-collapse: collapse; }
+        .table th { background: var(--color-gray-50); padding: 12px 16px; text-align: left; font-size: 12px; font-weight: 600; color: var(--color-gray-500); text-transform: uppercase; border-bottom: 1px solid var(--color-gray-200); }
+        .table td { padding: 14px 16px; border-bottom: 1px solid var(--color-gray-100); font-size: 14px; color: var(--color-gray-700); }
+        .table tbody tr:hover { background: var(--color-gray-50); }
+        .badge { display: inline-flex; height: 22px; padding: 0 8px; font-size: 12px; font-weight: 500; border-radius: var(--radius-sm); align-items: center; }
+        .badge-essay { background: #FEF3C7; color: #92400E; }
+        .badge-scene { background: #DBEAFE; color: #1E40AF; }
+        .action-btn { padding: 6px 12px; font-size: 13px; border: none; border-radius: var(--radius-sm); cursor: pointer; background: rgba(79, 70, 229, 0.1); color: var(--color-primary); transition: all 0.2s; }
+        .action-btn:hover { background: rgba(79, 70, 229, 0.2); }
+        .action-btn.primary { background: var(--color-primary); color: white; }
+        .action-btn.primary:hover { background: var(--color-primary-dark); }
+        .btn { display: inline-flex; align-items: center; justify-content: center; height: 40px; padding: 0 20px; font-size: 14px; font-weight: 500; border: none; border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background-color: var(--color-primary); color: white; }
+        .btn-secondary { background-color: var(--color-gray-100); color: var(--color-gray-700); }
+        /* 弹窗 */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.2s; }
+        .modal-overlay.show { opacity: 1; visibility: visible; }
+        .modal { background: white; border-radius: var(--radius-lg); width: 100%; max-width: 600px; max-height: 90vh; overflow: hidden; transform: scale(0.95); transition: transform 0.2s; }
+        .modal-overlay.show .modal { transform: scale(1); }
+        .modal-header { padding: 16px 20px; border-bottom: 1px solid var(--color-gray-200); display: flex; align-items: center; justify-content: space-between; }
+        .modal-header h3 { font-size: 16px; font-weight: 600; }
+        .modal-close { width: 32px; height: 32px; border: none; background: none; cursor: pointer; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: var(--color-gray-500); }
+        .modal-close:hover { background: var(--color-gray-100); }
+        .modal-body { padding: 20px; overflow-y: auto; max-height: calc(90vh - 130px); }
+        .modal-footer { padding: 16px 20px; border-top: 1px solid var(--color-gray-200); display: flex; justify-content: flex-end; gap: 8px; }
+        .review-item { border: 1px solid var(--color-gray-200); border-radius: var(--radius-md); padding: 16px; margin-bottom: 12px; }
+        .review-question { font-size: 14px; font-weight: 500; color: var(--color-gray-800); margin-bottom: 8px; }
+        .review-answer { font-size: 14px; color: var(--color-gray-600); background: var(--color-gray-50); padding: 12px; border-radius: var(--radius-sm); margin-bottom: 12px; }
+        .review-form { display: flex; align-items: flex-start; gap: 12px; }
+        .score-input { width: 80px; height: 36px; text-align: center; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md); font-size: 14px; }
+        .score-input:focus { outline: none; border-color: var(--color-primary); }
+        .form-textarea { width: 100%; height: 80px; padding: 10px 12px; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md); font-size: 14px; resize: vertical; }
+        .form-textarea:focus { outline: none; border-color: var(--color-primary); }
+        .toast { position: fixed; top: 20px; right: 20px; padding: 12px 20px; background: var(--color-gray-800); color: white; border-radius: var(--radius-md); font-size: 14px; z-index: 2000; opacity: 0; transform: translateY(-10px); transition: all 0.3s; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.success { background: var(--color-success); }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo"><h1>技能评估系统</h1><p>管理端</p></div>
+            <nav class="sidebar-nav">
+                <div class="nav-section"><div class="nav-section-title">账号管理</div><div class="nav-item"><span>员工列表</span></div></div>
+                <div class="nav-section"><div class="nav-section-title">题库管理</div><div class="nav-item"><span>题目列表</span></div></div>
+                <div class="nav-section">
+                    <div class="nav-section-title">考核管理</div>
+                    <div class="nav-item"><span>创建考核</span></div>
+                    <div class="nav-item"><span>考核监控</span></div>
+                    <div class="nav-item active"><span>批阅管理</span></div>
+                    <div class="nav-item"><span>成绩发布</span></div></div>
+            </nav>
+            <div class="sidebar-footer"><div class="user-info"><div class="user-avatar">A</div><div class="user-details"><div class="user-name">管理员</div><div class="user-role">Admin</div></div></div></div>
+        </aside>
+
+        <main class="main">
+            <header class="page-header">
+                <h1 class="page-title">批阅管理</h1>
+                <button class="btn btn-primary" onclick="handleBatchSubmit()">批量提交</button>
+            </header>
+            <div class="page-content">
+                <div class="filter-bar">
+                    <select class="filter-select"><option value="">全部考核</option><option>Linux 基础考核</option></select>
+                    <select class="filter-select"><option value="">全部类型</option><option>问答题</option><option>场景题</option></select>
+                    <select class="filter-select"><option value="">全部状态</option><option>待批阅</option><option>已批阅</option></select>
+                </div>
+
+                <div class="data-table">
+                    <table class="table">
+                        <thead><tr><th><input type="checkbox" id="selectAll"></th><th>员工</th><th>考核</th><th>题目</th><th>类型</th><th>得分</th><th>状态</th><th>操作</th></tr></thead>
+                        <tbody id="reviewTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 批阅弹窗 -->
+    <div class="modal-overlay" id="reviewModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>批阅答案</h3>
+                <button class="modal-close" onclick="closeModal()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+            </div>
+            <div class="modal-body" id="reviewModalBody"></div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">取消</button>
+                <button class="btn btn-primary" onclick="handleSubmitReview()">提交批阅</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+    <script src="../shared/js/utils.js"></script>
+    <script>
+        let currentReview = null;
+        const mockReviewData = [
+            { id: 1, employee: '张三', exam: 'Linux 基础考核', question: '描述一下 Linux 系统中如何排查服务器负载过高的问题？请列出具体步骤。', type: 'essay', score: '-', status: 'pending' },
+            { id: 2, employee: '李四', exam: 'Linux 基础考核', question: '如果服务器无法远程连接，请列出你的排查思路。', type: 'scene', score: '-', status: 'pending' },
+            { id: 3, employee: '王五', exam: '网络知识月度考核', question: 'TCP和UDP的区别是什么？分别在什么场景下使用？', type: 'essay', score: 15, status: 'done' },
+        ];
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('reviewTableBody');
+            tbody.innerHTML = mockReviewData.map(item => `
+                <tr>
+                    <td><input type="checkbox" data-id="${item.id}"></td>
+                    <td>${item.employee}</td>
+                    <td>${item.exam}</td>
+                    <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${item.question}</td>
+                    <td><span class="badge ${item.type === 'essay' ? 'badge-essay' : 'badge-scene'}">${item.type === 'essay' ? '问答题' : '场景题'}</span></td>
+                    <td>${item.score}</td>
+                    <td><span style="color: ${item.status === 'pending' ? 'var(--color-warning)' : 'var(--color-success)'}">${item.status === 'pending' ? '待批阅' : '已批阅'}</span></td>
+                    <td><button class="action-btn" onclick="openReview(${item.id})">批阅</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function openReview(id) {
+            currentReview = mockReviewData.find(r => r.id === id);
+            if (!currentReview) return;
+            document.getElementById('reviewModalBody').innerHTML = `
+                <div style="margin-bottom: 16px;">
+                    <div style="font-size: 12px; color: var(--color-gray-500); margin-bottom: 4px;">员工</div>
+                    <div style="font-size: 14px; font-weight: 500;">${currentReview.employee}</div>
+                </div>
+                <div class="review-item">
+                    <div class="review-question">${currentReview.question}</div>
+                    <div class="review-answer">这道题需要从系统负载、进程排查、资源使用等多个方面进行分析，具体步骤如下：<br><br>1. 使用 top 或 htop 查看系统负载情况<br>2. 使用 ps 命令查看异常进程<br>3. 检查网络连接状态<br>4. 查看日志文件定位问题...</div>
+                    <div class="review-form">
+                        <div>
+                            <div style="font-size: 12px; color: var(--color-gray-500); margin-bottom: 4px;">得分</div>
+                            <input type="number" class="score-input" id="reviewScore" value="${currentReview.score !== '-' ? currentReview.score : ''}" min="0" max="20">
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-size: 12px; color: var(--color-gray-500); margin-bottom: 4px;">批注</div>
+                            <textarea class="form-textarea" id="reviewComment" placeholder="添加批注（可选）"></textarea>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('reviewModal').classList.add('show');
+        }
+
+        function closeModal() { document.getElementById('reviewModal').classList.remove('show'); currentReview = null; }
+
+        function handleSubmitReview() {
+            const score = document.getElementById('reviewScore').value;
+            if (score === '' || score < 0) { showToast('请输入有效分数', 'error'); return; }
+            const idx = mockReviewData.findIndex(r => r.id === currentReview.id);
+            if (idx !== -1) { mockReviewData[idx].score = score; mockReviewData[idx].status = 'done'; }
+            showToast('批阅成功');
+            closeModal();
+            renderTable();
+        }
+
+        function handleBatchSubmit() {
+            const checked = document.querySelectorAll('tbody input[type="checkbox"]:checked');
+            if (checked.length === 0) { showToast('请选择要提交的项', 'error'); return; }
+            showToast(`已提交 ${checked.length} 项`);
+        }
+
+        document.getElementById('selectAll')?.addEventListener('change', function() {
+            document.querySelectorAll('tbody input[type="checkbox"]').forEach(cb => cb.checked = this.checked);
+        });
+
+        document.getElementById('reviewModal').addEventListener('click', e => { if (e.target === document.getElementById('reviewModal')) closeModal(); });
+        renderTable();
+    </script>
+</body>
+</html>

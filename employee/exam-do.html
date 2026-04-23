@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作答考核 - Dmall Helpdesk 技能评估系统</title>
+    <link rel="stylesheet" href="../shared/css/theme.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', -apple-system, sans-serif; background: #f3f4f6; }
+        .app { max-width: 430px; margin: 0 auto; min-height: 100vh; background: #f3f4f6; }
+        .header { background: white; padding: 12px 16px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 10; }
+        .back-btn { width: 32px; height: 32px; border: none; background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .exam-name { flex: 1; font-size: 15px; font-weight: 600; color: #1f2937; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .timer { background: #fee2e2; color: #991b1b; padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 600; }
+        .timer.warning { background: #fef3c7; color: #92400e; }
+        .timer.normal { background: #d1fae5; color: #065f46; }
+        .progress-info { padding: 10px 16px; background: white; font-size: 13px; color: #6b7280; border-bottom: 1px solid #f3f4f6; }
+        .content { padding: 16px; }
+        .question-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .question-header { display: flex; justify-content: space-between; margin-bottom: 14px; }
+        .question-num { font-size: 13px; color: #667eea; font-weight: 600; }
+        .question-type { font-size: 12px; color: #9ca3af; background: #f3f4f6; padding: 2px 8px; border-radius: 4px; }
+        .question-text { font-size: 15px; color: #1f2937; line-height: 1.6; margin-bottom: 20px; }
+        .options { display: flex; flex-direction: column; gap: 10px; }
+        .option { display: flex; align-items: center; gap: 12px; padding: 14px; border: 1px solid #e5e7eb; border-radius: 10px; cursor: pointer; transition: all 0.2s; }
+        .option:hover { border-color: #667eea; background: rgba(102,126,234,0.03); }
+        .option.selected { border-color: #667eea; background: rgba(102,126,234,0.08); }
+        .option-letter { width: 28px; height: 28px; border-radius: 50%; background: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #6b7280; flex-shrink: 0; }
+        .option.selected .option-letter { background: #667eea; color: white; }
+        .option-text { font-size: 14px; color: #374151; flex: 1; }
+        .bottom-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 430px; background: white; padding: 12px 16px; padding-bottom: calc(12px + env(safe-area-inset-bottom)); border-top: 1px solid #e5e7eb; display: flex; gap: 10px; align-items: center; }
+        .nav-btn { height: 40px; padding: 0 16px; border: 1px solid #e5e7eb; background: white; border-radius: 8px; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 4px; color: #374151; }
+        .nav-btn:hover { background: #f9fafb; }
+        .nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .question-dots { display: flex; gap: 6px; flex: 1; justify-content: center; flex-wrap: wrap; max-width: 200px; overflow: hidden; }
+        .dot { width: 24px; height: 24px; border-radius: 6px; background: #f3f4f6; border: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #9ca3af; cursor: pointer; }
+        .dot.current { background: #667eea; color: white; border-color: #667eea; }
+        .dot.answered { background: #d1fae5; color: #065f46; border-color: #d1fae5; }
+        .dot.marked { background: #fef3c7; color: #92400e; border-color: #fef3c7; }
+        .submit-btn { height: 40px; padding: 0 18px; background: #667eea; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; }
+        .mark-btn { height: 40px; padding: 0 12px; border: 1px solid #e5e7eb; background: white; border-radius: 8px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 4px; color: #6b7280; }
+        .mark-btn.active { background: #fef3c7; border-color: #fef3c7; color: #92400e; }
+        .auto-save { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); background: #d1fae5; color: #065f46; padding: 6px 14px; border-radius: 6px; font-size: 12px; z-index: 20; opacity: 0; transition: opacity 0.3s; }
+        .auto-save.show { opacity: 1; }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <div class="header">
+            <button class="back-btn" onclick="handleBack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+            <div class="exam-name">网络知识月度考核</div>
+            <div class="timer normal" id="timer">29:45</div>
+        </div>
+        <div class="progress-info">第 <strong id="currentNum">1</strong> / <strong>10</strong> 题 · 已答 <strong id="answeredCount">0</strong> 题</div>
+        <div class="auto-save" id="autoSave">已自动保存</div>
+
+        <div class="content">
+            <div class="question-card" id="questionCard"></div>
+        </div>
+
+        <div class="bottom-bar">
+            <button class="nav-btn" id="prevBtn" onclick="prevQuestion()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>上一题</button>
+            <div class="question-dots" id="questionDots"></div>
+            <button class="mark-btn" id="markBtn" onclick="toggleMark()">🏐 标记</button>
+            <button class="nav-btn" id="nextBtn" onclick="nextQuestion()">下一题<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
+            <button class="submit-btn" onclick="handleSubmit()">交卷</button>
+        </div>
+    </div>
+
+    <script src="../shared/js/utils.js"></script>
+    <script>
+        const questions = [
+            { id: 1, type: 'single', text: 'TCP三次握手过程中，第二次握手发送的是什么？', options: ['SYN', 'SYN+ACK', 'ACK', 'FIN'], answer: 1 },
+            { id: 2, type: 'single', text: '以下哪个端口是HTTP服务的默认端口？', options: ['21', '22', '80', '443'], answer: 2 },
+            { id: 3, type: 'judge', text: 'IP地址 192.168.1.1 属于公有IP地址。', options: ['正确', '错误'], answer: 1 },
+            { id: 4, type: 'single', text: '在OSI七层模型中，路由器工作在哪一层？', options: ['物理层', '数据链路层', '网络层', '传输层'], answer: 2 },
+            { id: 5, type: 'multiple', text: '以下哪些协议属于TCP/IP协议栈的传输层？', options: ['TCP', 'UDP', 'IP', 'HTTP'], answer: [0, 1] },
+            { id: 6, type: 'single', text: 'DNS服务的作用是什么？', options: ['分配IP地址', '域名解析', '发送邮件', '文件传输'], answer: 1 },
+            { id: 7, type: 'single', text: 'ping命令使用的是什么协议？', options: ['TCP', 'UDP', 'ICMP', 'IGMP'], answer: 2 },
+            { id: 8, type: 'judge', text: '交换机需要根据MAC地址来转发数据帧。', options: ['正确', '错误'], answer: 0 },
+            { id: 9, type: 'single', text: 'HTTP和HTTPS的主要区别是什么？', options: ['端口不同', '加密传输', '速度不同', '协议版本不同'], answer: 1 },
+            { id: 10, type: 'single', text: '子网掩码255.255.255.0有多少位？', options: ['8', '16', '24', '32'], answer: 2 },
+        ];
+
+        let currentIndex = 0;
+        let answers = new Array(questions.length).fill(null);
+        let marked = new Array(questions.length).fill(false);
+        let timerSeconds = 30 * 60 - 15;
+
+        function renderQuestion() {
+            const q = questions[currentIndex];
+            document.getElementById('currentNum').textContent = currentIndex + 1;
+            document.getElementById('prevBtn').disabled = currentIndex === 0;
+            document.getElementById('nextBtn').disabled = currentIndex === questions.length - 1;
+
+            const markBtn = document.getElementById('markBtn');
+            markBtn.classList.toggle('active', marked[currentIndex]);
+            markBtn.textContent = marked[currentIndex] ? '🏐 已标记' : '🏐 标记';
+
+            const typeText = q.type === 'single' ? '单选题' : q.type === 'multiple' ? '多选题' : '判断题';
+            const multiHint = q.type === 'multiple' ? '（多选）' : '';
+
+            document.getElementById('questionCard').innerHTML = `
+                <div class="question-header">
+                    <span class="question-num">第 ${currentIndex + 1} 题</span>
+                    <span class="question-type">${typeText}</span>
+                </div>
+                <div class="question-text">${q.text}${multiHint}</div>
+                <div class="options">
+                    ${q.options.map((opt, i) => `
+                        <div class="option ${getOptionClass(q, i)}" onclick="selectOption(${i})">
+                            <div class="option-letter">${String.fromCharCode(65 + i)}</div>
+                            <div class="option-text">${opt}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            renderDots();
+            updateAnsweredCount();
+        }
+
+        function getOptionClass(q, i) {
+            if (q.type === 'multiple') {
+                return Array.isArray(answers[currentIndex]) && answers[currentIndex].includes(i) ? 'selected' : '';
+            }
+            return answers[currentIndex] === i ? 'selected' : '';
+        }
+
+        function selectOption(index) {
+            const q = questions[currentIndex];
+            if (q.type === 'multiple') {
+                let current = answers[currentIndex] || [];
+                if (!Array.isArray(current)) current = [];
+                const idx = current.indexOf(index);
+                if (idx >= 0) current.splice(idx, 1);
+                else current.push(index);
+                answers[currentIndex] = current;
+            } else {
+                answers[currentIndex] = index;
+            }
+            renderQuestion();
+            showAutoSave();
+        }
+
+        function prevQuestion() { if (currentIndex > 0) { currentIndex--; renderQuestion(); } }
+        function nextQuestion() { if (currentIndex < questions.length - 1) { currentIndex++; renderQuestion(); } }
+
+        function toggleMark() { marked[currentIndex] = !marked[currentIndex]; renderDots(); renderQuestion(); }
+
+        function renderDots() {
+            const container = document.getElementById('questionDots');
+            container.innerHTML = questions.map((_, i) => {
+                let cls = 'dot';
+                if (i === currentIndex) cls += ' current';
+                else if (marked[i]) cls += ' marked';
+                else if (answers[i] !== null) cls += ' answered';
+                return `<div class="${cls}" onclick="jumpTo(${i})">${i + 1}</div>`;
+            }).join('');
+        }
+
+        function jumpTo(index) { currentIndex = index; renderQuestion(); }
+
+        function updateAnsweredCount() {
+            const count = answers.filter(a => a !== null).length;
+            document.getElementById('answeredCount').textContent = count;
+        }
+
+        function showAutoSave() {
+            const el = document.getElementById('autoSave');
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 2000);
+        }
+
+        function updateTimer() {
+            const mins = Math.floor(timerSeconds / 60);
+            const secs = timerSeconds % 60;
+            const timerEl = document.getElementById('timer');
+            timerEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            timerEl.className = 'timer ' + (timerSeconds < 300 ? 'warning' : 'normal');
+            if (timerSeconds <= 0) { handleSubmit(); return; }
+            timerSeconds--;
+        }
+
+        function handleBack() {
+            if (confirm('确定要退出吗？当前进度已保存。')) {
+                sessionStorage.setItem('examAnswers', JSON.stringify(answers));
+                sessionStorage.setItem('examMarked', JSON.stringify(marked));
+                history.back();
+            }
+        }
+
+        function handleSubmit() {
+            const unanswered = answers.filter(a => a === null).length;
+            if (unanswered > 0 && !confirm(`还有 ${unanswered} 题未答，确定要交卷吗？`)) return;
+            sessionStorage.setItem('examAnswers', JSON.stringify(answers));
+            sessionStorage.setItem('examMarked', JSON.stringify(marked));
+            location.href = 'exam-submit.html';
+        }
+
+        // 恢复已保存的答案
+        const saved = sessionStorage.getItem('examAnswers');
+        if (saved) { try { const parsed = JSON.parse(saved); if (Array.isArray(parsed)) answers = parsed; } catch(e) {} }
+        const savedMarked = sessionStorage.getItem('examMarked');
+        if (savedMarked) { try { const parsed = JSON.parse(savedMarked); if (Array.isArray(parsed)) marked = parsed; } catch(e) {} }
+
+        renderQuestion();
+        setInterval(updateTimer, 1000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>考核监控 - Dmall Helpdesk 技能评估系统</title>
+    <link rel="stylesheet" href="../shared/css/theme.css">
+    <style>
+        :root { --sidebar-width: 240px; }
+        .layout { display: flex; min-height: 100vh; }
+        .sidebar { width: var(--sidebar-width); background: var(--bg-sidebar); color: white; position: fixed; height: 100vh; display: flex; flex-direction: column; }
+        .sidebar-logo { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-logo h1 { font-size: 16px; font-weight: 600; }
+        .sidebar-logo p { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 4px; }
+        .sidebar-nav { flex: 1; padding: 16px 0; overflow-y: auto; }
+        .nav-section { margin-bottom: 24px; }
+        .nav-section-title { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.4); text-transform: uppercase; padding: 0 20px; margin-bottom: 8px; }
+        .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; font-size: 14px; color: rgba(255,255,255,0.7); cursor: pointer; transition: all 0.2s; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
+        .nav-item.active { background: rgba(79, 70, 229, 0.3); color: white; border-right: 3px solid var(--color-primary); }
+        .sidebar-footer { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; }
+        .user-details { flex: 1; }
+        .user-name { font-size: 14px; font-weight: 500; }
+        .user-role { font-size: 12px; color: rgba(255,255,255,0.5); }
+        .main { flex: 1; margin-left: var(--sidebar-width); display: flex; flex-direction: column; }
+        .page-header { background: white; border-bottom: 1px solid var(--color-gray-200); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
+        .page-title { font-size: 18px; font-weight: 600; color: var(--color-gray-900); }
+        .page-content { flex: 1; padding: 24px; }
+        /* 统计卡片 */
+        .stats-bar { display: flex; gap: 16px; margin-bottom: 24px; }
+        .stat-card { flex: 1; background: white; border-radius: var(--radius-lg); padding: 20px; display: flex; align-items: center; gap: 16px; }
+        .stat-icon { width: 48px; height: 48px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; }
+        .stat-icon.green { background: rgba(16, 185, 129, 0.1); color: #10B981; }
+        .stat-icon.blue { background: rgba(59, 130, 246, 0.1); color: #3B82F6; }
+        .stat-icon.orange { background: rgba(245, 158, 11, 0.1); color: #F59E0B; }
+        .stat-icon.red { background: rgba(239, 68, 68, 0.1); color: #EF4444; }
+        .stat-value { font-size: 28px; font-weight: 700; color: var(--color-gray-900); }
+        .stat-label { font-size: 13px; color: var(--color-gray-500); }
+        .progress-ring { position: relative; width: 60px; height: 60px; }
+        .progress-ring svg { transform: rotate(-90deg); }
+        .progress-ring text { font-size: 14px; font-weight: 600; fill: var(--color-gray-900); }
+        /* 表格 */
+        .data-table { background: white; border-radius: var(--radius-lg); overflow: hidden; }
+        .table { width: 100%; border-collapse: collapse; }
+        .table th { background: var(--color-gray-50); padding: 12px 16px; text-align: left; font-size: 12px; font-weight: 600; color: var(--color-gray-500); text-transform: uppercase; border-bottom: 1px solid var(--color-gray-200); }
+        .table td { padding: 14px 16px; border-bottom: 1px solid var(--color-gray-100); font-size: 14px; color: var(--color-gray-700); }
+        .table tbody tr:hover { background: var(--color-gray-50); }
+        .status-tag { display: inline-flex; align-items: center; height: 24px; padding: 0 8px; font-size: 12px; font-weight: 500; border-radius: var(--radius-sm); }
+        .status-done { background: #D1FAE5; color: #065F46; }
+        .status-progress { background: #DBEAFE; color: #1E40AF; }
+        .status-notstart { background: var(--color-gray-200); color: var(--color-gray-500); }
+        .status-abnormal { background: #FEE2E2; color: #991B1B; }
+        .action-btns { display: flex; gap: 4px; }
+        .action-btn { padding: 6px 10px; font-size: 12px; border: none; border-radius: var(--radius-sm); cursor: pointer; background: var(--color-gray-100); color: var(--color-gray-700); transition: all 0.2s; }
+        .action-btn:hover { background: var(--color-gray-200); }
+        .action-btn.danger { background: rgba(239, 68, 68, 0.1); color: var(--color-danger); }
+        .action-btn.warning { background: rgba(245, 158, 11, 0.1); color: #F59E0B; }
+        /* 筛选 */
+        .filter-bar { background: white; border-radius: var(--radius-lg); padding: 16px 20px; margin-bottom: 16px; display: flex; gap: 12px; align-items: center; }
+        .filter-select { height: 36px; padding: 0 12px; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md); font-size: 14px; background: white; }
+        .filter-select:focus { outline: none; border-color: var(--color-primary); }
+        .btn { display: inline-flex; align-items: center; justify-content: center; height: 36px; padding: 0 16px; font-size: 14px; font-weight: 500; border: none; border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background-color: var(--color-primary); color: white; }
+        .btn-secondary { background-color: var(--color-gray-100); color: var(--color-gray-700); }
+        .toast { position: fixed; top: 20px; right: 20px; padding: 12px 20px; background: var(--color-gray-800); color: white; border-radius: var(--radius-md); font-size: 14px; z-index: 2000; opacity: 0; transform: translateY(-10px); transition: all 0.3s; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.success { background: var(--color-success); }
+        .toast.error { background: var(--color-danger); }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo"><h1>技能评估系统</h1><p>管理端</p></div>
+            <nav class="sidebar-nav">
+                <div class="nav-section"><div class="nav-section-title">账号管理</div><div class="nav-item"><span>员工列表</span></div></div>
+                <div class="nav-section"><div class="nav-section-title">题库管理</div><div class="nav-item"><span>题目列表</span></div></div>
+                <div class="nav-section">
+                    <div class="nav-section-title">考核管理</div>
+                    <div class="nav-item"><span>创建考核</span></div>
+                    <div class="nav-item active"><span>考核监控</span></div>
+                    <div class="nav-item"><span>批阅管理</span></div>
+                    <div class="nav-item"><span>成绩发布</span></div></div>
+            </nav>
+            <div class="sidebar-footer"><div class="user-info"><div class="user-avatar">A</div><div class="user-details"><div class="user-name">管理员</div><div class="user-role">Admin</div></div></div></div>
+        </aside>
+
+        <main class="main">
+            <header class="page-header">
+                <h1 class="page-title">考核监控</h1>
+                <div style="display: flex; gap: 8px;">
+                    <select class="filter-select" id="examSelect"><option value="">全部考核</option><option>Linux 基础考核</option><option>网络知识月度考核</option></select>
+                    <button class="btn btn-secondary">导出数据</button>
+                </div>
+            </header>
+            <div class="page-content">
+                <div class="stats-bar">
+                    <div class="stat-card">
+                        <div class="stat-icon green"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                        <div><div class="stat-value">7</div><div class="stat-label">已完成</div></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div>
+                        <div><div class="stat-value">2</div><div class="stat-label">进行中</div></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon orange"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg></div>
+                        <div><div class="stat-value">1</div><div class="stat-label">未开始</div></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon red"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path></svg></div>
+                        <div><div class="stat-value">1</div><div class="stat-label">异常</div></div>
+                    </div>
+                </div>
+
+                <div class="data-table">
+                    <table class="table">
+                        <thead><tr><th>姓名</th><th>状态</th><th>用时</th><th>进度</th><th>切屏次数</th><th>操作</th></tr></thead>
+                        <tbody id="monitorTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+    <div class="toast" id="toast"></div>
+    <script src="../shared/js/utils.js"></script>
+    <script>
+        const MONITOR_STATUS_MAP = {
+            done: { text: '已完成', class: 'status-done' },
+            progress: { text: '进行中', class: 'status-progress' },
+            notstart: { text: '未开始', class: 'status-notstart' },
+            abnormal: { text: '异常', class: 'status-abnormal' }
+        };
+
+        const mockMonitorData = [
+            { name: '张三', status: 'done', time: '28分钟', progress: '100%', screenSwitch: 0 },
+            { name: '李四', status: 'progress', time: '15分钟', progress: '60%', screenSwitch: 1 },
+            { name: '王五', status: 'abnormal', time: '8分钟', progress: '30%', screenSwitch: 5 },
+            { name: '赵六', status: 'notstart', time: '-', progress: '0%', screenSwitch: 0 },
+            { name: '钱七', status: 'progress', time: '22分钟', progress: '80%', screenSwitch: 0 },
+            { name: '孙八', status: 'done', time: '25分钟', progress: '100%', screenSwitch: 0 },
+            { name: '周九', status: 'done', time: '30分钟', progress: '100%', screenSwitch: 2 },
+        ];
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('monitorTableBody');
+            tbody.innerHTML = mockMonitorData.map(m => {
+                const status = MONITOR_STATUS_MAP[m.status];
+                return `<tr>
+                    <td>${m.name}</td>
+                    <td><span class="status-tag ${status.class}">${status.text}</span></td>
+                    <td>${m.time}</td>
+                    <td>${m.progress}</td>
+                    <td style="color: ${m.screenSwitch > 3 ? 'var(--color-danger)' : 'inherit'}">${m.screenSwitch}次</td>
+                    <td>
+                        <div class="action-btns">
+                            ${m.status === 'progress' ? '<button class="action-btn danger" onclick="handleForceEnd()">强制结束</button>' : ''}
+                            ${m.status === 'abnormal' ? '<button class="action-btn warning" onclick="handleView()">查看</button>' : ''}
+                            <button class="action-btn" onclick="handleRemind()">提醒</button>
+                        </div>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function handleForceEnd() { showToast('已强制结束该员工考核'); }
+        function handleView() { showToast('查看异常详情'); }
+        function handleRemind() { showToast('已发送提醒'); }
+
+        renderTable();
+    </script>
+</body>
+</html>

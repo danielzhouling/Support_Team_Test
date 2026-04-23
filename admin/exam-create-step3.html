@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>创建考核 - Step3 - Dmall Helpdesk 技能评估系统</title>
+    <link rel="stylesheet" href="../shared/css/theme.css">
+    <style>
+        :root { --sidebar-width: 240px; }
+        .layout { display: flex; min-height: 100vh; }
+        .sidebar { width: var(--sidebar-width); background: var(--bg-sidebar); color: white; position: fixed; height: 100vh; display: flex; flex-direction: column; }
+        .sidebar-logo { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-logo h1 { font-size: 16px; font-weight: 600; }
+        .sidebar-logo p { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 4px; }
+        .sidebar-nav { flex: 1; padding: 16px 0; overflow-y: auto; }
+        .nav-section { margin-bottom: 24px; }
+        .nav-section-title { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.4); text-transform: uppercase; padding: 0 20px; margin-bottom: 8px; }
+        .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; font-size: 14px; color: rgba(255,255,255,0.7); cursor: pointer; transition: all 0.2s; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
+        .nav-item.active { background: rgba(79, 70, 229, 0.3); color: white; border-right: 3px solid var(--color-primary); }
+        .sidebar-footer { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; }
+        .user-details { flex: 1; }
+        .user-name { font-size: 14px; font-weight: 500; }
+        .user-role { font-size: 12px; color: rgba(255,255,255,0.5); }
+        .main { flex: 1; margin-left: var(--sidebar-width); display: flex; flex-direction: column; }
+        .page-header { background: white; border-bottom: 1px solid var(--color-gray-200); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
+        .page-title { font-size: 18px; font-weight: 600; color: var(--color-gray-900); }
+        .page-content { flex: 1; padding: 24px; }
+        .step-bar { background: white; border-radius: var(--radius-lg); padding: 24px 32px; margin-bottom: 24px; display: flex; align-items: center; justify-content: center; }
+        .step-item { display: flex; align-items: center; gap: 8px; }
+        .step-num { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; }
+        .step-num.active { background: var(--color-primary); color: white; }
+        .step-num.done { background: var(--color-success); color: white; }
+        .step-num.pending { background: var(--color-gray-200); color: var(--color-gray-500); }
+        .step-label { font-size: 14px; font-weight: 500; }
+        .step-label.active { color: var(--color-primary); }
+        .step-label.done { color: var(--color-success); }
+        .step-label.pending { color: var(--color-gray-400); }
+        .step-line { width: 80px; height: 2px; background: var(--color-gray-200); margin: 0 16px; }
+        .step-line.done { background: var(--color-success); }
+        .content-layout { display: flex; gap: 24px; }
+        .form-panel { flex: 1; background: white; border-radius: var(--radius-lg); padding: 32px; }
+        .form-section { margin-bottom: 32px; }
+        .form-section-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: var(--color-gray-900); display: flex; align-items: center; gap: 8px; }
+        .form-section-title .num { width: 24px; height: 24px; border-radius: 50%; background: var(--color-primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: 14px; font-weight: 500; color: var(--color-gray-700); margin-bottom: 8px; }
+        .form-label .required { color: var(--color-danger); }
+        .form-input, .form-textarea, .form-select { width: 100%; padding: 0 12px; font-size: 14px; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md); background: white; }
+        .form-input { height: 40px; }
+        .form-textarea { height: 80px; padding: 10px 12px; resize: vertical; }
+        .form-input:focus, .form-textarea:focus, .form-select:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+        .radio-group { display: flex; gap: 16px; }
+        .radio-item { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .radio-item input { accent-color: var(--color-primary); }
+        .checkbox-group { display: flex; gap: 16px; flex-wrap: wrap; }
+        .checkbox-item { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .checkbox-item input { accent-color: var(--color-primary); }
+        /* 预览卡片 */
+        .preview-panel { width: 360px; background: white; border-radius: var(--radius-lg); overflow: hidden; }
+        .preview-header { padding: 16px 20px; border-bottom: 1px solid var(--color-gray-200); }
+        .preview-title { font-size: 16px; font-weight: 600; }
+        .preview-body { padding: 20px; }
+        .preview-item { margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--color-gray-100); }
+        .preview-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .preview-label { font-size: 12px; color: var(--color-gray-500); margin-bottom: 4px; }
+        .preview-value { font-size: 14px; font-weight: 500; color: var(--color-gray-900); }
+        .preview-badge { display: inline-flex; padding: 2px 8px; background: rgba(79, 70, 229, 0.1); color: var(--color-primary); border-radius: 3px; font-size: 12px; font-weight: 500; }
+        .form-actions { display: flex; justify-content: space-between; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--color-gray-200); }
+        .btn { display: inline-flex; align-items: center; justify-content: center; height: 44px; padding: 0 24px; font-size: 14px; font-weight: 500; border: none; border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background-color: var(--color-primary); color: white; }
+        .btn-primary:hover { background-color: var(--color-primary-dark); }
+        .btn-secondary { background-color: var(--color-gray-100); color: var(--color-gray-700); }
+        .btn-secondary:hover { background-color: var(--color-gray-200); }
+        .btn-success { background-color: var(--color-success); color: white; }
+        .btn-success:hover { background-color: #059669; }
+        .toast { position: fixed; top: 20px; right: 20px; padding: 12px 20px; background: var(--color-gray-800); color: white; border-radius: var(--radius-md); font-size: 14px; z-index: 2000; opacity: 0; transform: translateY(-10px); transition: all 0.3s; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.success { background: var(--color-success); }
+        .toast.error { background: var(--color-danger); }
+        /* 员工选择列表 */
+        .employee-select-list { border: 1px solid var(--color-gray-300); border-radius: var(--radius-md); max-height: 200px; overflow-y: auto; }
+        .employee-select-item { padding: 10px 14px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--color-gray-100); cursor: pointer; }
+        .employee-select-item:last-child { border-bottom: none; }
+        .employee-select-item:hover { background: var(--color-gray-50); }
+        .employee-select-item.selected { background: rgba(79, 70, 229, 0.05); }
+        .employee-select-item input { accent-color: var(--color-primary); }
+        .employee-info { flex: 1; }
+        .employee-name { font-size: 14px; font-weight: 500; }
+        .employee-meta { font-size: 12px; color: var(--color-gray-400); }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo"><h1>技能评估系统</h1><p>管理端</p></div>
+            <nav class="sidebar-nav">
+                <div class="nav-section"><div class="nav-section-title">账号管理</div><div class="nav-item"><span>员工列表</span></div></div>
+                <div class="nav-section"><div class="nav-section-title">题库管理</div><div class="nav-item"><span>题目列表</span></div></div>
+                <div class="nav-section"><div class="nav-section-title">考核管理</div><div class="nav-item active"><span>创建考核</span></div><div class="nav-item"><span>考核监控</span></div><div class="nav-item"><span>批阅管理</span></div><div class="nav-item"><span>成绩发布</span></div></div>
+            </nav>
+            <div class="sidebar-footer"><div class="user-info"><div class="user-avatar">A</div><div class="user-details"><div class="user-name">管理员</div><div class="user-role">Admin</div></div></div></div>
+        </aside>
+
+        <main class="main">
+            <header class="page-header"><h1 class="page-title">创建考核</h1></header>
+            <div class="page-content">
+                <div class="step-bar">
+                    <div class="step-item"><div class="step-num done">✓</div><span class="step-label done">基本信息</span></div>
+                    <div class="step-line done"></div>
+                    <div class="step-item"><div class="step-num done">✓</div><span class="step-label done">选择题目</span></div>
+                    <div class="step-line done"></div>
+                    <div class="step-item"><div class="step-num active">3</div><span class="step-label active">发布设置</span></div>
+                </div>
+
+                <div class="content-layout">
+                    <div class="form-panel">
+                        <div class="form-section">
+                            <h3 class="form-section-title"><span class="num">1</span>参与人员</h3>
+                            <div class="radio-group" style="margin-bottom: 16px;">
+                                <label class="radio-item"><input type="radio" name="participantType" value="all" checked onchange="toggleParticipantMode()"><span>全体员工</span></label>
+                                <label class="radio-item"><input type="radio" name="participantType" value="team" onchange="toggleParticipantMode()"><span>指定团队</span></label>
+                                <label class="radio-item"><input type="radio" name="participantType" value="specific" onchange="toggleParticipantMode()"><span>指定人员</span></label>
+                            </div>
+                            <div id="participantList" class="employee-select-list" style="display: none;"></div>
+                            <div id="participantCount" style="margin-top: 8px; font-size: 13px; color: var(--color-gray-500);">共 <strong>5</strong> 名员工</div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3 class="form-section-title"><span class="num">2</span>发布设置</h3>
+                            <div class="radio-group" style="margin-bottom: 16px;">
+                                <label class="radio-item"><input type="radio" name="publishType" value="now" checked><span>立即发布</span></label>
+                                <label class="radio-item"><input type="radio" name="publishType" value="scheduled"><span>定时发布</span></label>
+                            </div>
+                            <div class="form-group" id="publishTimeGroup" style="display: none;">
+                                <input type="datetime-local" class="form-input" id="publishTime">
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3 class="form-section-title"><span class="num">3</span>通知设置</h3>
+                            <div class="checkbox-group">
+                                <label class="checkbox-item"><input type="checkbox" checked><span>站内通知</span></label>
+                                <label class="checkbox-item"><input type="checkbox"><span>短信通知</span></label>
+                                <label class="checkbox-item"><input type="checkbox"><span>邮件通知</span></label>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button class="btn btn-secondary" onclick="handlePrev()">上一步</button>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn btn-secondary" onclick="handleSaveDraft()">保存草稿</button>
+                                <button class="btn btn-primary" onclick="handleCreate()">创建考核</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="preview-panel">
+                        <div class="preview-header"><h3 class="preview-title">信息预览</h3></div>
+                        <div class="preview-body">
+                            <div class="preview-item">
+                                <div class="preview-label">考核名称</div>
+                                <div class="preview-value" id="previewName">-</div>
+                            </div>
+                            <div class="preview-item">
+                                <div class="preview-label">及格分数</div>
+                                <div class="preview-value" id="previewPassScore">-</div>
+                            </div>
+                            <div class="preview-item">
+                                <div class="preview-label">答题时长</div>
+                                <div class="preview-value" id="previewDuration">-</div>
+                            </div>
+                            <div class="preview-item">
+                                <div class="preview-label">题目数量</div>
+                                <div class="preview-value"><span class="preview-badge" id="previewQuestionCount">0</span> 题</div>
+                            </div>
+                            <div class="preview-item">
+                                <div class="preview-label">总分</div>
+                                <div class="preview-value" id="previewTotalScore">-</div>
+                            </div>
+                            <div class="preview-item">
+                                <div class="preview-label">截止时间</div>
+                                <div class="preview-value" id="previewDeadline">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="toast" id="toast"></div>
+    <script src="../shared/js/utils.js"></script>
+    <script>
+        let examData = JSON.parse(sessionStorage.getItem('examDraft') || '{}');
+        let selectedParticipants = new Set(MockData.employees.filter(e => e.status === 'active').map(e => e.id));
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function loadPreview() {
+            if (examData.step1) {
+                document.getElementById('previewName').textContent = examData.step1.examName || '-';
+                document.getElementById('previewPassScore').textContent = examData.step1.passScore + ' 分';
+                document.getElementById('previewDuration').textContent = examData.step1.duration + ' 分钟';
+                document.getElementById('previewDeadline').textContent = examData.step1.deadline ? examData.step1.deadline.replace('T', ' ') : '无';
+            }
+            if (examData.selectedQuestions) {
+                document.getElementById('previewQuestionCount').textContent = examData.selectedQuestions.length;
+                let score = 0;
+                examData.selectedQuestions.forEach(id => {
+                    const q = MockData.questions.find(q => q.id === id);
+                    if (q) score += q.difficulty === 'hard' ? 20 : q.difficulty === 'medium' ? 10 : 5;
+                });
+                document.getElementById('previewTotalScore').textContent = score + ' 分';
+            }
+        }
+
+        function toggleParticipantMode() {
+            const mode = document.querySelector('input[name="participantType"]:checked').value;
+            const list = document.getElementById('participantList');
+            const count = document.getElementById('participantCount');
+            if (mode === 'all') {
+                list.style.display = 'none';
+                selectedParticipants = new Set(MockData.employees.filter(e => e.status === 'active').map(e => e.id));
+                count.innerHTML = `共 <strong>${selectedParticipants.size}</strong> 名员工`;
+            } else {
+                list.style.display = 'block';
+                renderParticipantList();
+            }
+        }
+
+        function renderParticipantList() {
+            const list = document.getElementById('participantList');
+            const activeEmployees = MockData.employees.filter(e => e.status === 'active');
+            list.innerHTML = activeEmployees.map(emp => {
+                const checked = selectedParticipants.has(emp.id) ? 'checked' : '';
+                return `<div class="employee-select-item ${checked ? 'selected' : ''}" onclick="toggleParticipant('${emp.id}', this)">
+                    <input type="checkbox" ${checked} onclick="event.stopPropagation()">
+                    <div class="employee-info">
+                        <div class="employee-name">${emp.name}</div>
+                        <div class="employee-meta">${emp.department} · ${emp.position}</div>
+                    </div>
+                </div>`;
+            }).join('');
+            document.getElementById('participantCount').innerHTML = `已选择 <strong>${selectedParticipants.size}</strong> 名员工`;
+        }
+
+        function toggleParticipant(id, el) {
+            if (selectedParticipants.has(id)) {
+                selectedParticipants.delete(id);
+                el.classList.remove('selected');
+                el.querySelector('input').checked = false;
+            } else {
+                selectedParticipants.add(id);
+                el.classList.add('selected');
+                el.querySelector('input').checked = true;
+            }
+            document.getElementById('participantCount').innerHTML = `已选择 <strong>${selectedParticipants.size}</strong> 名员工`;
+        }
+
+        document.querySelectorAll('input[name="publishType"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                document.getElementById('publishTimeGroup').style.display = radio.value === 'scheduled' ? 'block' : 'none';
+            });
+        });
+
+        function handlePrev() { window.location.href = 'exam-create-step2.html'; }
+
+        function handleSaveDraft() {
+            examData.participants = Array.from(selectedParticipants);
+            sessionStorage.setItem('examDraft', JSON.stringify(examData));
+            showToast('草稿已保存');
+        }
+
+        function handleCreate() {
+            if (selectedParticipants.size === 0) { showToast('请选择参与人员', 'error'); return; }
+            examData.participants = Array.from(selectedParticipants);
+            examData.status = 'published';
+            examData.createdAt = new Date().toISOString().split('T')[0];
+
+            const newExam = {
+                id: 'EX' + String(MockData.exams.length + 1).padStart(3, '0'),
+                name: examData.step1?.examName || '新考核',
+                status: 'published',
+                participants: selectedParticipants.size,
+                completed: 0,
+                createdAt: examData.createdAt
+            };
+            MockData.exams.push(newExam);
+
+            sessionStorage.removeItem('examDraft');
+            showToast('考核创建成功', 'success');
+            setTimeout(() => window.location.href = 'employee-list.html', 1500);
+        }
+
+        loadPreview();
+    </script>
+</body>
+</html>
