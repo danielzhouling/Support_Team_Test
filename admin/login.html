@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理端登录 - Dmall Helpdesk 技能评估系统</title>
+    <link rel="stylesheet" href="../shared/css/theme.css">
+    <style>
+        .login-card {
+            position: relative;
+        }
+        .login-tabs {
+            display: flex;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--color-gray-200);
+        }
+        .login-tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--color-gray-500);
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .login-tab.active {
+            color: var(--color-primary);
+            border-bottom-color: var(--color-primary);
+        }
+        .login-tab:hover:not(.active) {
+            color: var(--color-gray-700);
+        }
+        .form-footer {
+            margin-top: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .forgot-link {
+            font-size: 14px;
+            color: var(--color-primary);
+            text-decoration: none;
+        }
+        .forgot-link:hover {
+            text-decoration: underline;
+        }
+        .error-alert {
+            background-color: #FEE2E2;
+            border: 1px solid #FECACA;
+            color: #991B1B;
+            padding: 12px;
+            border-radius: var(--radius-md);
+            margin-bottom: 16px;
+            font-size: 14px;
+            display: none;
+        }
+        .error-alert.show {
+            display: block;
+        }
+        .demo-hint {
+            margin-top: 24px;
+            padding: 12px;
+            background: var(--color-gray-50);
+            border-radius: var(--radius-md);
+            font-size: 12px;
+            color: var(--color-gray-500);
+        }
+        .demo-hint strong {
+            color: var(--color-gray-700);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-layout">
+        <div class="login-card">
+            <div class="login-logo">
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="48" height="48" rx="12" fill="#4F46E5"/>
+                    <path d="M14 24L20 30L34 16" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <h1>技能评估系统</h1>
+                <p>管理端</p>
+            </div>
+
+            <div class="login-tabs">
+                <div class="login-tab active" data-tab="password">密码登录</div>
+                <div class="login-tab" data-tab="sms">短信登录</div>
+            </div>
+
+            <div id="errorMessage" class="error-alert" role="alert"></div>
+
+            <!-- 密码登录表单 -->
+            <form id="passwordLoginForm">
+                <div class="form-group">
+                    <label class="form-label" for="username">用户名</label>
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        class="form-input"
+                        placeholder="请输入用户名"
+                        autocomplete="username"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">密码</label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        class="form-input"
+                        placeholder="请输入密码"
+                        autocomplete="current-password"
+                    >
+                </div>
+
+                <div class="form-footer">
+                    <label class="form-checkbox">
+                        <input type="checkbox" id="remember" name="remember">
+                        <span>记住登录状态</span>
+                    </label>
+                    <a href="#" class="forgot-link">忘记密码？</a>
+                </div>
+
+                <div class="form-group mt-6">
+                    <button type="submit" class="btn btn-primary btn-block">登录</button>
+                </div>
+            </form>
+
+            <!-- 短信登录表单（隐藏） -->
+            <form id="smsLoginForm" style="display: none;">
+                <div class="form-group">
+                    <label class="form-label" for="phone">手机号</label>
+                    <input
+                        type="tel"
+                        id="phone"
+                        name="phone"
+                        class="form-input"
+                        placeholder="请输入手机号"
+                        autocomplete="tel"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="smsCode">验证码</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input
+                            type="text"
+                            id="smsCode"
+                            name="smsCode"
+                            class="form-input"
+                            placeholder="请输入验证码"
+                            maxlength="6"
+                            style="flex: 1;"
+                        >
+                        <button type="button" class="btn" id="sendSmsBtn" style="background: var(--color-gray-100); color: var(--color-gray-700); min-width: 100px;">
+                            发送验证码
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group mt-6">
+                    <button type="submit" class="btn btn-primary btn-block">登录</button>
+                </div>
+            </form>
+
+            <div class="demo-hint">
+                <strong>演示账号：</strong>用户名 <strong>admin</strong>，密码 <strong>admin123</strong>
+            </div>
+        </div>
+    </div>
+
+    <script src="../shared/js/utils.js"></script>
+    <script>
+        // Tab 切换
+        document.querySelectorAll('.login-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // 切换 tab active 状态
+                document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                // 切换表单
+                const tabType = tab.dataset.tab;
+                const passwordForm = document.getElementById('passwordLoginForm');
+                const smsForm = document.getElementById('smsLoginForm');
+
+                if (tabType === 'password') {
+                    passwordForm.style.display = 'block';
+                    smsForm.style.display = 'none';
+                } else {
+                    passwordForm.style.display = 'none';
+                    smsForm.style.display = 'block';
+                }
+
+                // 清除错误信息
+                clearError();
+            });
+        });
+
+        // 页面加载时检查是否记住登录
+        window.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('remember') === 'true') {
+                const savedUsername = localStorage.getItem('username');
+                if (savedUsername) {
+                    document.getElementById('username').value = savedUsername;
+                    document.getElementById('remember').checked = true;
+                }
+            }
+        });
+
+        // 密码登录表单提交
+        document.getElementById('passwordLoginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const formData = {
+                username: document.getElementById('username').value.trim(),
+                password: document.getElementById('password').value,
+                remember: document.getElementById('remember').checked
+            };
+
+            clearError();
+
+            const result = handleLogin(formData);
+
+            if (!result.success) {
+                showError(result.errors.join('；'));
+                // 添加错误样式到输入框
+                document.getElementById('username').classList.add('error');
+                document.getElementById('password').classList.add('error');
+                return;
+            }
+
+            // 登录成功，跳转到员工列表页
+            window.location.href = 'employee-list.html';
+        });
+
+        // 移除错误样式（输入时）
+        ['username', 'password'].forEach(id => {
+            document.getElementById(id).addEventListener('input', () => {
+                document.getElementById(id).classList.remove('error');
+                clearError();
+            });
+        });
+
+        // 短信登录 - 发送验证码
+        let smsCooldown = 0;
+        const sendSmsBtn = document.getElementById('sendSmsBtn');
+
+        sendSmsBtn.addEventListener('click', () => {
+            if (smsCooldown > 0) return;
+
+            const phone = document.getElementById('phone').value.trim();
+            if (!phone || phone.length !== 11) {
+                showError('请输入正确的手机号');
+                return;
+            }
+
+            // 模拟发送验证码
+            smsCooldown = 60;
+            sendSmsBtn.textContent = `${smsCooldown}秒后重发`;
+            sendSmsBtn.disabled = true;
+
+            const timer = setInterval(() => {
+                smsCooldown--;
+                if (smsCooldown <= 0) {
+                    clearInterval(timer);
+                    sendSmsBtn.textContent = '发送验证码';
+                    sendSmsBtn.disabled = false;
+                } else {
+                    sendSmsBtn.textContent = `${smsCooldown}秒后重发`;
+                }
+            }, 1000);
+        });
+
+        // 短信登录表单提交
+        document.getElementById('smsLoginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const phone = document.getElementById('phone').value.trim();
+            const smsCode = document.getElementById('smsCode').value.trim();
+
+            clearError();
+
+            if (!phone || phone.length !== 11) {
+                showError('请输入正确的手机号');
+                return;
+            }
+
+            if (!smsCode || smsCode.length !== 6) {
+                showError('请输入6位验证码');
+                return;
+            }
+
+            // 模拟短信登录成功
+            const mockUser = { username: phone, name: '手机用户', role: 'admin' };
+            sessionStorage.setItem('currentUser', JSON.stringify(mockUser));
+
+            window.location.href = 'employee-list.html';
+        });
+    </script>
+</body>
+</html>

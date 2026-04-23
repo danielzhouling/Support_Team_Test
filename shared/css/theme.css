@@ -1,0 +1,339 @@
+/* ============================================
+   Dmall Helpdesk 技能评估系统 - 共享样式
+   ============================================ */
+
+/* CSS Variables */
+:root {
+    /* 主色 */
+    --color-primary: #4F46E5;
+    --color-primary-light: #818CF8;
+    --color-primary-dark: #3730A3;
+
+    /* 辅助色 */
+    --color-success: #10B981;
+    --color-warning: #F59E0B;
+    --color-danger: #EF4444;
+    --color-info: #3B82F6;
+
+    /* 中性色 */
+    --color-gray-50: #F9FAFB;
+    --color-gray-100: #F3F4F6;
+    --color-gray-200: #E5E7EB;
+    --color-gray-300: #D1D5DB;
+    --color-gray-400: #9CA3AF;
+    --color-gray-500: #6B7280;
+    --color-gray-600: #4B5563;
+    --color-gray-700: #374151;
+    --color-gray-800: #1F2937;
+    --color-gray-900: #111827;
+
+    /* 背景 */
+    --bg-page: #F3F4F6;
+    --bg-card: #FFFFFF;
+    --bg-sidebar: #1F2937;
+
+    /* 字体 */
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+    /* 圆角 */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+
+    /* 阴影 */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* Reset */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-family);
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--color-gray-800);
+    background-color: var(--bg-page);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* 布局 */
+.login-layout {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 100%);
+}
+
+.login-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 48px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.login-logo {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.login-logo h1 {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--color-gray-900);
+    margin-top: 16px;
+}
+
+.login-logo p {
+    font-size: 14px;
+    color: var(--color-gray-500);
+    margin-top: 4px;
+}
+
+/* 表单 */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-gray-700);
+    margin-bottom: 6px;
+}
+
+.form-input {
+    width: 100%;
+    height: 40px;
+    padding: 0 12px;
+    font-size: 14px;
+    border: 1px solid var(--color-gray-300);
+    border-radius: var(--radius-md);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.form-input.error {
+    border-color: var(--color-danger);
+}
+
+.form-error {
+    font-size: 12px;
+    color: var(--color-danger);
+    margin-top: 6px;
+}
+
+/* 复选框 */
+.form-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.form-checkbox input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--color-primary);
+    cursor: pointer;
+}
+
+.form-checkbox span {
+    font-size: 14px;
+    color: var(--color-gray-600);
+}
+
+/* 按钮 */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    padding: 0 20px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background-color: var(--color-primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--color-primary-dark);
+}
+
+.btn-primary:active {
+    transform: scale(0.98);
+}
+
+.btn-block {
+    width: 100%;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* 页面头部 */
+.page-header {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--color-gray-200);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.page-header h1 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-gray-900);
+}
+
+/* 内容区 */
+.page-content {
+    padding: 24px;
+}
+
+/* 卡片 */
+.card {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-gray-200);
+}
+
+.card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--color-gray-200);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.card-header h2 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-gray-800);
+}
+
+.card-body {
+    padding: 20px;
+}
+
+/* 表格 */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th,
+.table td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--color-gray-200);
+}
+
+.table th {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-gray-500);
+    text-transform: uppercase;
+    background: var(--color-gray-50);
+}
+
+.table tbody tr:hover {
+    background-color: var(--color-gray-50);
+}
+
+/* 标签 */
+.tag {
+    display: inline-flex;
+    align-items: center;
+    height: 24px;
+    padding: 0 8px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+}
+
+.tag-success {
+    background-color: #D1FAE5;
+    color: #065F46;
+}
+
+.tag-warning {
+    background-color: #FEF3C7;
+    color: #92400E;
+}
+
+.tag-danger {
+    background-color: #FEE2E2;
+    color: #991B1B;
+}
+
+.tag-info {
+    background-color: #DBEAFE;
+    color: #1E40AF;
+}
+
+/* 分页 */
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.pagination button {
+    min-width: 32px;
+    height: 32px;
+    border: 1px solid var(--color-gray-300);
+    background: white;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.pagination button.active {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+}
+
+.pagination button:hover:not(.active) {
+    background: var(--color-gray-100);
+}
+
+/* 工具类 */
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.mt-4 { margin-top: 16px; }
+.mt-6 { margin-top: 24px; }
+.mb-4 { margin-bottom: 16px; }
+.mb-6 { margin-bottom: 24px; }
+.flex { display: flex; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-2 { gap: 8px; }
+.gap-4 { gap: 16px; }

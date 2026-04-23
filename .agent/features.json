@@ -7,7 +7,7 @@
       "id": "PHASE0-001",
       "phase": "阶段0 - 原型确认",
       "description": "管理端 - 登录页 (admin/login.html)",
-      "pass": false,
+      "pass": true,
       "details": [
         "账号密码输入框",
         "记住登录状态复选框",
